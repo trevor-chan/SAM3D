@@ -11,7 +11,9 @@ for filepath in filepaths:
     base_img = img.copy()
 # Initialize global variables
     pos_points = [[]]  # List of lists to hold positive polylines
+    pos_points_tosave = [[]]
     neg_points = [[]]  # List of lists to hold negative polylines
+    neg_points_tosave = [[]]
     current_phase = "positive"  # Start with collecting positive points
 
     # Function to redraw the entire image with points, lines, coordinates, and instructions
@@ -66,9 +68,10 @@ for filepath in filepaths:
             point = (x, y)
             if current_phase == "positive":
                 pos_points[-1].append(point)  # Add to the last list of positive polylines
+                pos_points_tosave[-1].append((x, y,0))
             else:
                 neg_points[-1].append(point)  # Add to the last list of negative polylines
-
+                neg_points_tosave[-1].append((x, y,0))
             redraw_image()  # Redraw the image with the new point
 
     # Function to start a new polyline
@@ -76,8 +79,10 @@ for filepath in filepaths:
         global pos_points, neg_points
         if polyline_type == "positive":
             pos_points.append([])  # Start a new list for a new positive polyline
+            pos_points_tosave.append([])
         else:
             neg_points.append([])  # Start a new list for a new negative polyline
+            neg_points_tosave.append([])
         print(f"Started a new {'positive' if polyline_type == 'positive' else 'negative'} polyline.")
         redraw_image()  # Redraw the image to update the instructions and visible points
 
@@ -105,9 +110,24 @@ for filepath in filepaths:
             elif key == ord('q'):  # Quit
                 break
         cv2.destroyAllWindows()
-        dict = {"img": filepath, "pos_polylines": pos_points, "neg_polylines": neg_points}
-        # Keep each polyline as a separate array
+        dict = {"img": filepath, "pos_polylines": pos_points_tosave, "neg_polylines": neg_points_tosave}
         return dict
+
+# data = [
+#     {'img': 'C:\\Users\\aarus\\Downloads\\CT-abdomen-400x267.jpg', 'pos_polylines': [[(322, 188), (197, 147)]], 'neg_polylines': [[(231, 200), (316, 129)]]},
+#     {'img': 'C:\\Users\\aarus\\Downloads\\plot([99]).png', 'pos_polylines': [[(315, 128), (392, 179)]], 'neg_polylines': [[(383, 270), (319, 319)]]}
+
+
+# Iterate through each dictionary in the list
+        # for key in ['pos_polylines', 'neg_polylines']:
+        #     # Iterate through each list of tuples (polylines) for the current key
+        #     for i, polyline in enumerate(dict[key]):
+        #         # Iterate through each tuple (coordinate point) in the polyline
+        #         # and change it to (point[0], point[1], 0)
+        #         dict[key][i] = [(point[0], point[1], 0) for point in polyline]
+
+# print(data)
+
 
     if __name__ == "__main__":
         listofdicts.append(main())
