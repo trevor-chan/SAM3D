@@ -29,13 +29,7 @@ def show_box(box, ax):
 
 image = cv2.imread(filepath)
 print(image.shape)
-# image = cv2.imread(r"/sdata1/aarush/code/00002_z0000.png")
-# image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
-# plt.figure(figsize=(10,10))
-# plt.imshow(image)
-# plt.axis('on')
-# plt.show()
 
 import sys
 sys.path.append("..")
