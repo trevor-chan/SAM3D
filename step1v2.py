@@ -104,12 +104,21 @@ for filepath in filepaths:
                 start_new_polyline("negative")
             elif key == ord('q'):  # Quit
                 break
-
         cv2.destroyAllWindows()
-        dict = {"Image Name": filepath, "Positive Polylines": pos_points, "Negative Polylines": neg_points}
+        dict = {"img": filepath, "pos_polylines": pos_points, "neg_polylines": neg_points}
         # Keep each polyline as a separate array
         return dict
 
     if __name__ == "__main__":
         listofdicts.append(main())
-    print(listofdicts)
+print(listofdicts)
+
+import json
+
+filename = 'C:\\Users\\aarus\\Downloads\\data.json'
+
+# Write the list of dictionaries to the file in JSON format
+with open(filename, 'w') as f:
+    json.dump(listofdicts, f, indent=4)
+
+print(f"Data has been saved to {filename}")
