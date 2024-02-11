@@ -167,6 +167,7 @@ from scipy.ndimage import binary_erosion
 
 
 # Erode the mask
+
 eroded_mask = binary_erosion(final_mask_squeezed)
 
 # Find the outer boundary by subtracting the eroded mask from the original mask
@@ -174,3 +175,9 @@ outer_boundary = final_mask_squeezed - eroded_mask
 
 plt.imshow(outer_boundary, cmap='gray')
 plt.show()
+
+
+#take the final mask filled in
+#stack the masks from all slices
+#set threshold based on density
+#run gaussian kernel to determine how close points are
