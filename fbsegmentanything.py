@@ -160,3 +160,17 @@ plt.imshow(final_mask_squeezed, cmap='gray')
 plt.axis('off')
 plt.title('Segmentation Mask')
 plt.show()
+
+from scipy.ndimage import binary_erosion
+
+# Example segmentation mask
+
+
+# Erode the mask
+eroded_mask = binary_erosion(final_mask_squeezed)
+
+# Find the outer boundary by subtracting the eroded mask from the original mask
+outer_boundary = final_mask_squeezed - eroded_mask
+
+plt.imshow(outer_boundary, cmap='gray')
+plt.show()
