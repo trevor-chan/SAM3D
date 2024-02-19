@@ -1,0 +1,7 @@
+__pycache__/
+*.png
+*.npy
+*.npz
+*.jpg
+*.json
+*.mrc
