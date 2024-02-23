@@ -1,6 +1,5 @@
 import numpy as np
 import scipy
-import utils
 import matplotlib.pyplot as plt
 import copy
 
@@ -41,8 +40,7 @@ class Transform:
     def __simple_padding(self, array, constant=0):
         assert array.shape[0] == array.shape[1] == array.shape[2], 'array should be squished to square'
         hypotenuse = 3 ** 0.5 * array.shape[0]
-        padwidth = hypotenuse - array.shape[0]
-
+        padwidth = int((hypotenuse - array.shape[0]) / 2)
         array = np.pad(
             array,
             ((padwidth,padwidth),(padwidth,padwidth),(padwidth,padwidth))
@@ -51,16 +49,15 @@ class Transform:
 
     
     # for applying to an image matrix in 3D or a multichannel image matrix in 3D + 1D
-    def apply_to_array(self, array, scale=1, padwith=None, inverse=False, order=3, mode='nearest'):
+    def apply_to_array(self, array, inverse=False, order=1):
         transform = self.__get_matrix(inverse=inverse)
 
         # padding to avoid losing information
-        if padwith is not None:
-            array = self.__simple_padding(array, scale, padwith)
+        array = self.__simple_padding(array)
 
         center = np.array(array.shape)/2
         offset = center - self.rotation.apply(center)
-        tarray = scipy.ndimage.affine_transform(translated, transform[:-1,:-1], order=order, mode='constant', cval=padwith, offset=offset)
+        tarray = scipy.ndimage.affine_transform(array, transform[:-1,:-1], order=order, mode='constant', cval=0, offset=offset)
         return tarray
     
         
