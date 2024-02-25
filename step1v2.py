@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 
 # Load the JPEG image
-filepaths = ["C:\\Users\\aarus\\Downloads\\CT-abdomen-400x267.jpg", "C:\\Users\\aarus\Downloads\\plot([99]).png"]
+filepaths = ["C:\\Users\\aarus\\Downloads\\slices_for_prompting/slice_0.png", "C:\\Users\\aarus\\Downloads\\slices_for_prompting/slice_1.png", "C:\\Users\\aarus\\Downloads\\slices_for_prompting/slice_2.png", "C:\\Users\\aarus\\Downloads\\slices_for_prompting/slice_3.png", "C:\\Users\\aarus\\Downloads\\slices_for_prompting/slice_4.png", "C:\\Users\\aarus\\Downloads\\slices_for_prompting/slice_5.png", "C:\\Users\\aarus\\Downloads\\slices_for_prompting/slice_6.png", "C:\\Users\\aarus\\Downloads\\slices_for_prompting/slice_7.png", "C:\\Users\\aarus\\Downloads\\slices_for_prompting/slice_8.png", "C:\\Users\\aarus\\Downloads\\slices_for_prompting/slice_9.png"]
   # Copy of the original image to use as a base for redrawing
 listofdicts = []
 for filepath in filepaths:

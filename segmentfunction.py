@@ -3,26 +3,6 @@ import torch
 import matplotlib.pyplot as plt
 import cv2
 
-filepath = r"C:\\Users\\aarus\\Downloads\\OrganSegmentations\\00002_z0000.png"
-image = cv2.imread(filepath)
-checkpointfilepath = r"C:\\Users\\aarus\\Downloads\\sam_vit_h_4b8939.pth"
-import sys
-sys.path.append("..")
-from segment_anything import sam_model_registry, SamPredictor
-
-
-sam_checkpoint = checkpointfilepath
-model_type = "vit_h"
-
-# device = "cuda"
-
-sam = sam_model_registry[model_type](checkpoint=sam_checkpoint)
-# sam.to(device=device)
-
-predictor = SamPredictor(sam)
-
-print("done")
-
 def segment(image, zidx, promptlists):
     predictor.set_image(image)
     print("done2")
@@ -90,10 +70,29 @@ def segment(image, zidx, promptlists):
     plt.imshow(outer_boundary, cmap='gray')
     plt.show()
 
+filepaths = [r"C:\\Users\\aarus\\Downloads\\OrganSegmentations\\00002_z0000.png"]
+prompts = [[[(100,0),(0,100)],[(50,0),(0,50)]]]
 
-#take the final mask filled in
-#stack the masks from all slices
-#set threshold based on density
-#run gaussian kernel to determine how close points are
-    
-segment(image, 0, [[(0,1)], [(1,0)]])
+for i in range(len(filepaths)):
+
+    image = cv2.imread(filepaths[i])
+
+    checkpointfilepath = r"C:\\Users\\aarus\\Downloads\\sam_vit_h_4b8939.pth"
+    import sys
+    sys.path.append("..")
+    from segment_anything import sam_model_registry, SamPredictor
+
+
+    sam_checkpoint = checkpointfilepath
+    model_type = "vit_h"
+
+    # device = "cuda"
+
+    sam = sam_model_registry[model_type](checkpoint=sam_checkpoint)
+    # sam.to(device=device)
+
+    predictor = SamPredictor(sam)
+    segment(image, 0, [prompts[i][0],prompts[i][1]])
+
+print("done")
+
