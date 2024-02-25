@@ -70,12 +70,12 @@ def segment(image, zidx, promptlists):
     plt.imshow(outer_boundary, cmap='gray')
     plt.show()
 
-filepaths = [r"C:\\Users\\aarus\\Downloads\\OrganSegmentations\\00002_z0000.png"]
+arrays = [] #put np arrays for each image here
 prompts = [[[(100,0),(0,100)],[(50,0),(0,50)]]]
 
-for i in range(len(filepaths)):
+for i in range(len(arrays)):
 
-    image = cv2.imread(filepaths[i])
+    image = arrays[i]
 
     checkpointfilepath = r"C:\\Users\\aarus\\Downloads\\sam_vit_h_4b8939.pth"
     import sys
