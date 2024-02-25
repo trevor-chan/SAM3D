@@ -3,7 +3,7 @@ import torch
 import matplotlib.pyplot as plt
 import cv2
 
-def segment(image, zidx, promptlists):
+def segment(predictor,image, zidx, promptlists):
     predictor.set_image(image)
     print("done2")
     pospoints = promptlists[0]
@@ -49,11 +49,11 @@ def segment(image, zidx, promptlists):
     final_mask_squeezed = np.squeeze(final_mask)
 
     # Now plot the final mask
-    plt.figure(figsize=(10, 10))
-    plt.imshow(final_mask_squeezed, cmap='gray')
-    plt.axis('off')
-    plt.title('Segmentation Mask')
-    plt.show()
+    # plt.figure(figsize=(10, 10))
+    # plt.imshow(final_mask_squeezed, cmap='gray')
+    # plt.axis('off')
+    # plt.title('Segmentation Mask')
+    # plt.show()
 
     from scipy.ndimage import binary_erosion
 
@@ -69,6 +69,7 @@ def segment(image, zidx, promptlists):
 
     plt.imshow(outer_boundary, cmap='gray')
     plt.show()
+    return final_mask_squeezed, outer_boundary
 
 arrays = [] #put np arrays for each image here
 prompts = [[[(100,0),(0,100)],[(50,0),(0,50)]]]
