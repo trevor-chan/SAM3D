@@ -55,6 +55,7 @@ def get_icosahedron_transforms(full=False):
     transforms = []
     for vec in icosahedron_vertices:
         transforms.append(rot_from_vecs(vec))
+
     return transforms
 
 
@@ -67,5 +68,5 @@ def get_cube_transforms(full=False):
                                   [1, -1, 1], [1, 1, 1]])
     transforms = []
     for vec in cube_vertices:
-        transforms.append(rot_from_vecs(vec))
+            transforms.append(rot_from_vecs(vec))
     return transforms
