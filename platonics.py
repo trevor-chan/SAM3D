@@ -22,31 +22,49 @@ def rotation_matrix_from_vectors(vec1, vec2):
     rotation_matrix = np.eye(3) + kmat + kmat.dot(kmat) * ((1 - c) / (s ** 2))
     return rotation_matrix
 
-def get_dodecahedron_transforms():
+def get_dodecahedron_transforms(full=False):
     gr = (1 + np.sqrt(5))/2
-    dodecahedron_vertices = np.array([
-    [1, 1, 1], [1, 1, -1], [1, -1, 1], [1, -1, -1],[-1, 1, 1], [-1, 1, -1], [-1, -1, 1], [-1, -1, -1],
-    [0, gr, 1 / gr], [0, -gr, 1 / gr], [0, gr, -1 / gr], [0, -gr, -1 / gr],
-    [gr, 1 / gr, 0], [-gr, 1 / gr, 0], [gr, -1 / gr, 0], [-gr, -1 / gr, 0],
-    [1 / gr, 0, gr], [1 / gr, 0, -gr], [-1 / gr, 0, gr], [-1 / gr, 0, -gr]])
+    if full:
+        dodecahedron_vertices = np.array([
+        [1, 1, 1], [1, 1, -1], [1, -1, 1], [1, -1, -1],[-1, 1, 1], [-1, 1, -1], [-1, -1, 1], [-1, -1, -1],
+        [0, gr, 1 / gr], [0, -gr, 1 / gr], [0, gr, -1 / gr], [0, -gr, -1 / gr],
+        [gr, 1 / gr, 0], [-gr, 1 / gr, 0], [gr, -1 / gr, 0], [-gr, -1 / gr, 0],
+        [1 / gr, 0, gr], [1 / gr, 0, -gr], [-1 / gr, 0, gr], [-1 / gr, 0, -gr]])
+    else:
+        dodecahedron_vertices = np.array([
+        [1, 1, 1], [1, -1, 1], [-1, 1, 1], [-1, -1, 1],
+        [0, gr, 1 / gr], [0, -gr, 1 / gr],
+        [gr, 1 / gr, 0], [-gr, 1 / gr, 0],
+        [1 / gr, 0, gr], [1 / gr, 0, -gr]])
     transforms = []
     for vec in dodecahedron_vertices:
         transforms.append(rot_from_vecs(vec))
     return transforms
 
-def get_icosahedron_transforms():
+
+def get_icosahedron_transforms(full=False):
     gr = (1 + np.sqrt(5))/2
-    icosahedron_vertices = np.array([[0,1,gr],[0,1,-gr],[0,-1,gr],[0,-1,-gr],
-                                     [1,gr,0],[1,-gr,0],[-1,gr,0],[-1,-gr,0],
-                                     [gr,0,1],[-gr,0,1],[gr,0,-1],[-gr,0,-1]])
+    if full:
+        icosahedron_vertices = np.array([[0,1,gr],[0,1,-gr],[0,-1,gr],[0,-1,-gr],
+                                        [1,gr,0],[1,-gr,0],[-1,gr,0],[-1,-gr,0],
+                                        [gr,0,1],[-gr,0,1],[gr,0,-1],[-gr,0,-1]])
+    else:
+        icosahedron_vertices = np.array([[0,1,gr],[0,1,-gr],
+                                        [1,gr,0],[1,-gr,0],
+                                        [gr,0,1],[-gr,0,1]])
     transforms = []
     for vec in icosahedron_vertices:
         transforms.append(rot_from_vecs(vec))
     return transforms
 
-def get_cube_transforms():
-    cube_vertices = np.array([[-1, -1, -1], [-1, -1, 1], [-1, 1, -1],
-                          [-1, 1, 1], [1, -1, -1], [1, -1, 1], [1, 1, -1], [1, 1, 1]])
+
+def get_cube_transforms(full=False):
+    if full:
+        cube_vertices = np.array([[-1, -1, -1], [-1, -1, 1], [-1, 1, -1], [-1, 1, 1], 
+                                  [1, -1, -1], [1, -1, 1], [1, 1, -1], [1, 1, 1]])
+    else:
+        cube_vertices = np.array([[-1, -1, 1], [-1, 1, 1], 
+                                  [1, -1, 1], [1, 1, 1]])
     transforms = []
     for vec in cube_vertices:
         transforms.append(rot_from_vecs(vec))
