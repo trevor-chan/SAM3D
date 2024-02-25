@@ -1,5 +1,6 @@
 import numpy as np
-import scipy.spatial.transform.Rotation
+# import scipy.spatial.transform.Rotation
+from scipy import spatial
 import geometry
 
 def rot_from_vecs(vec1, vec2=[1,0,0]):
