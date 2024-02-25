@@ -1,6 +1,5 @@
 import numpy as np
-# import scipy.spatial.transform.Rotation
-from scipy import spatial
+import scipy
 import geometry
 
 def rot_from_vecs(vec1, vec2=[1,0,0]):
@@ -37,8 +36,9 @@ def get_dodecahedron_transforms():
 
 def get_icosahedron_transforms():
     gr = (1 + np.sqrt(5))/2
-    icosahedron_vertices = np.array([[0,1,gr],[0,1,-gr],[0,-1,gr],[0,-1,-gr],[1,gr,0],[1,-gr,0],
-                     [-1,gr,0],[-1,-gr,0],[gr,0,1],[-gr,0,1],[gr,0,-1],[-gr,0,-1]])
+    icosahedron_vertices = np.array([[0,1,gr],[0,1,-gr],[0,-1,gr],[0,-1,-gr],
+                                     [1,gr,0],[1,-gr,0],[-1,gr,0],[-1,-gr,0],
+                                     [gr,0,1],[-gr,0,1],[gr,0,-1],[-gr,0,-1]])
     transforms = []
     for vec in icosahedron_vertices:
         transforms.append(rot_from_vecs(vec))
