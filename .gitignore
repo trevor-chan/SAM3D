@@ -3,6 +3,5 @@ __pycache__/
 *.npy
 *.npz
 *.jpg
-*.json
 *.mrc
 *.pyc
