@@ -4,7 +4,8 @@ import os
 
 # Load the JPEG image
 #filepaths is all the files in a specific folder
-folder = "C:\\Users\\aarus\\Downloads\\slices_for_prompting"
+folder = "slices_for_prompting"
+
 filepaths = [os.path.join(folder, f) for f in os.listdir(folder) if f.endswith('.png')]
 print(filepaths)
 # filepaths = ["C:\\Users\\aarus\\Downloads\\slices_for_prompting/slice_0.png", "C:\\Users\\aarus\\Downloads\\slices_for_prompting/slice_1.png", "C:\\Users\\aarus\\Downloads\\slices_for_prompting/slice_2.png", "C:\\Users\\aarus\\Downloads\\slices_for_prompting/slice_3.png", "C:\\Users\\aarus\\Downloads\\slices_for_prompting/slice_4.png", "C:\\Users\\aarus\\Downloads\\slices_for_prompting/slice_5.png", "C:\\Users\\aarus\\Downloads\\slices_for_prompting/slice_6.png", "C:\\Users\\aarus\\Downloads\\slices_for_prompting/slice_7.png", "C:\\Users\\aarus\\Downloads\\slices_for_prompting/slice_8.png", "C:\\Users\\aarus\\Downloads\\slices_for_prompting/slice_9.png"]
@@ -140,7 +141,7 @@ print(listofdicts)
 
 import json
 
-filename = 'C:\\Users\\aarus\\Downloads\\data.json'
+filename = 'data.json'
 
 # Write the list of dictionaries to the file in JSON format
 with open(filename, 'w') as f:
