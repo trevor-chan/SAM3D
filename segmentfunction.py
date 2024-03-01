@@ -57,7 +57,7 @@ def segment(predictor,image, promptlists):
     ax = fig.add_subplot()
     ax.set_xticks([])
     ax.set_yticks([])
-    ax.set_axis_off()
+    # ax.set_axis_off()
     for pt in pospoints:
         ax.scatter(pt[0], pt[1], c='g', s=10)
     for pt in negpoints:
@@ -70,6 +70,10 @@ def segment(predictor,image, promptlists):
     # print("min points = ", np.min(pospoints))
 
     ax.imshow(image[:,:,0], cmap='gray')
+    # print(np.max(image[:,:,0]))
+    # sort = (np.argsort(image[:,:,0]))
+    # print(np.max(sort))
+    # print(np.max(image[0,:,0]))
     ax.imshow(outer_boundary, cmap='inferno', alpha=0.5)
     plt.show()
     return final_mask_squeezed, outer_boundary

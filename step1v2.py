@@ -55,9 +55,11 @@ def click_event(event, x, y, flags, param):
         if current_phase == "positive":
             pos_points[-1].append(point)  # Add to the last list of positive polylines
             pos_points_tosave[-1].append((x, y,0))
+            # pos_points_tosave[-1].append((y, x, 0))
         else:
             neg_points[-1].append(point)  # Add to the last list of negative polylines
             neg_points_tosave[-1].append((x, y,0))
+            # neg_points_tosave[-1].append((y, x, 0))
         redraw_image()  # Redraw the image with the new point
 
 # Function to start a new polyline
@@ -121,7 +123,7 @@ def main():
     #filepaths is all the files in a specific folder
     folder = args.path
     listofdicts = []
-    filepaths = [os.path.join(folder, f) for f in os.listdir(folder) if f.endswith('.png')]
+    filepaths = sorted([os.path.join(folder, f) for f in os.listdir(folder) if f.endswith('.png')])
     print(filepaths)
     # Copy of the original image to use as a base for redrawing
     for filepath in filepaths:
