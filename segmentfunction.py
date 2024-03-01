@@ -8,8 +8,12 @@ def segment(predictor,image, zidx, promptlists):
     # print("done2")
     pospoints = promptlists[0]
     negpoints = promptlists[1]
-
-    input_point = np.concatenate([pospoints, negpoints], axis=0)
+    print(pospoints)
+    print(negpoints)
+    if len(negpoints)==0:
+        input_point = np.array(pospoints)
+    else:
+        input_point = np.concatenate([pospoints, negpoints], axis=0)
 
     input_labelpos = np.ones(len(pospoints), dtype=np.int64)
     input_labelneg = np.zeros(len(negpoints), dtype=np.int64)
