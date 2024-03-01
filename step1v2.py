@@ -168,6 +168,7 @@ def main():
         json.dump(listofdicts, f, indent=4)
 
     print(f"Data has been saved to {filename}")
+    print(listofdicts)
     return listofdicts
 
 

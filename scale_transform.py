@@ -8,22 +8,22 @@ def scale_forward (point, shape):
 def scale_backward (point, shape):
     return (point + 1) / 2 * np.array(shape)
 
-def get_intersection_point(point1, point2, idx):
-    dx = point2[0] - point1[0]
-    dy = point2[1] - point1[1]
-    dz = point2[2] - point1[2]
+def get_intersection_point(p1, p2, z): #Takes points in global and returns intecept in global if exists, otherwise None
 
+    if (p1[2]-z)*(p2[2]-z) > 0:
+        return None
+    
+    dz = p2[2] - p1[2]
     if dz == 0:
         return None
+    dx = p2[0] - p1[0]
+    dy = p2[1] - p1[1]
 
-    t = (idx - point1[2]) / dz
+    t = (z - p1[2]) / dz
 
-    if 0 <= t <= 1:
-        x_intercept = point1[0] + t * dx
-        y_intercept = point1[1] + t * dy
-        return (x_intercept, y_intercept, idx)
-    else:
-        return None
+    x_intercept = p1[0] + t * dx
+    y_intercept = p1[1] + t * dy
+    return (x_intercept, y_intercept, z)
 
 # matrix index to zero centric cube
 def index_to_coord (point, transform, shape):
