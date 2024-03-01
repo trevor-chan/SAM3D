@@ -3,13 +3,17 @@ import torch
 import matplotlib.pyplot as plt
 import cv2
 
+if torch.cuda.is_available():
+    device = "cuda"
+else:
+    device = "cpu"
+
+
 def segment(predictor,image, zidx, promptlists):
     predictor.set_image(image)
     # print("done2")
     pospoints = promptlists[0]
     negpoints = promptlists[1]
-    print(pospoints)
-    print(negpoints)
     if len(negpoints)==0:
         input_point = np.array(pospoints)
     else:
