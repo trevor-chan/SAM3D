@@ -45,7 +45,7 @@ for filepath in filepaths:
                     cv2.line(img, polyline[i - 1], point, (0, 0, 255), 2)
 
         # Draw instructions
-        instructions = "Left-click to draw. 'N' to switch. 'P' for new pos line." "\n" "'M' for new neg line. 'Q' to quit."
+        instructions = "Left-click to draw. 'A' to switch. 'W' for new pos line." "\n" "'S' for new neg line. 'D' to delete. 'Q' to quit."
         phase_instruction = "Drawing " + ("Positive (Green)" if current_phase == "positive" else "Negative (Red)") + " Polylines"
 
         # Split the instructions into lines
@@ -82,20 +82,53 @@ for filepath in filepaths:
 
     # Function to start a new polyline
     def start_new_polyline(polyline_type):
-        global pos_points, neg_points
+        global pos_points, neg_points, current_phase
         if polyline_type == "positive":
             pos_points.append([])  # Start a new list for a new positive polyline
             pos_points_tosave.append([])
+            current_phase = 'positive'
         else:
             neg_points.append([])  # Start a new list for a new negative polyline
             neg_points_tosave.append([])
+            current_phase = 'negative'
         print(f"Started a new {'positive' if polyline_type == 'positive' else 'negative'} polyline.")
+        redraw_image()  # Redraw the image to update the instructions and visible points
+
+    # Function to start a new polyline
+    def delete_point():
+        global pos_points, neg_points, current_phase
+        if current_phase == "positive":
+            if len(pos_points[-1]) == 0:
+                if len(pos_points) == 1:
+                    print('no points left to delete')
+                    return
+                pos_points.pop()
+                pos_points_tosave.pop()
+            else:
+                pos_points[-1].pop()
+                pos_points_tosave[-1].pop()
+        else:
+            if len(neg_points[-1]) == 0:
+                if len(neg_points) == 1:
+                    print('no points left to delete')
+                    return
+                neg_points.pop()
+                neg_points_tosave.pop()
+            else:
+                neg_points[-1].pop()
+                neg_points_tosave[-1].pop()
         redraw_image()  # Redraw the image to update the instructions and visible points
 
     # Function to switch between positive and negative points collection
     def switch_phase():
         global current_phase
         current_phase = "negative" if current_phase == "positive" else "positive"
+        if current_phase == "positive":
+            pos_points.append([])
+            pos_points_tosave.append([])
+        else:
+            neg_points.append([])
+            neg_points_tosave.append([])
         print(f"Switched to {'negative' if current_phase == 'negative' else 'positive'} points collection.")
         redraw_image()  # Redraw the image to update the instructions and visible points
 
@@ -107,12 +140,14 @@ for filepath in filepaths:
 
         while True:
             key = cv2.waitKey(1) & 0xFF
-            if key == ord('n'):  # Switch phases
+            if key == ord('a'):  # Switch phases
                 switch_phase()
-            elif key == ord('p'):  # Start a new positive polyline
+            elif key == ord('w'):  # Start a new positive polyline
                 start_new_polyline("positive")
-            elif key == ord('m'):  # Start a new negative polyline
+            elif key == ord('s'):  # Start a new negative polyline
                 start_new_polyline("negative")
+            elif key == ord('d'):  # delete a point or line (if last point)
+                delete_point()
             elif key == ord('q'):  # Quit
                 break
         cv2.destroyAllWindows()
