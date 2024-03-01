@@ -1,7 +1,7 @@
 import numpy as np
 import torch
 import matplotlib.pyplot as plt
-import cv2
+from scipy.ndimage import binary_erosion
 
 if torch.cuda.is_available():
     device = "cuda"
@@ -9,9 +9,8 @@ else:
     device = "cpu"
 
 
-def segment(predictor,image, zidx, promptlists):
+def segment(predictor,image, promptlists):
     predictor.set_image(image)
-    # print("done2")
     pospoints = promptlists[0]
     negpoints = promptlists[1]
     if len(negpoints)==0:
@@ -21,18 +20,9 @@ def segment(predictor,image, zidx, promptlists):
 
     input_labelpos = np.ones(len(pospoints), dtype=np.int64)
     input_labelneg = np.zeros(len(negpoints), dtype=np.int64)
-# for i in range(0, len(input_point[0])):
-#     input_labelpos[i] = 1
-
-# for i in range(0, len(input_point[1])):
-#     input_labelneg[i] = 0
 
     input_label = np.concatenate([input_labelpos, input_labelneg], axis=0)
 
-    # print(input_point)
-    # print(input_label)
-
-    # print("done4")
     masks, scores, logits = predictor.predict(
         point_coords=input_point,
         point_labels=input_label,
@@ -48,22 +38,10 @@ def segment(predictor,image, zidx, promptlists):
         multimask_output=False,
     )
 
-    # print("done5")
     final_mask = masks.astype(np.uint8)
-    # print(final_mask.shape)
-    # print(final_mask)
 
     # Remove the singleton dimension from final_mask
     final_mask_squeezed = np.squeeze(final_mask)
-
-    # Now plot the final mask
-    # plt.figure(figsize=(10, 10))
-    # plt.imshow(final_mask_squeezed, cmap='gray')
-    # plt.axis('off')
-    # plt.title('Segmentation Mask')
-    # plt.show()
-
-    from scipy.ndimage import binary_erosion
 
     # Example segmentation mask
 
@@ -76,16 +54,16 @@ def segment(predictor,image, zidx, promptlists):
     outer_boundary = final_mask_squeezed - eroded_mask
 
 
-    for i in pospoints:
-        plt.scatter(i[0], i[1], c='g', s=10)
-    for i in negpoints:
-        plt.scatter(i[0], i[1], c='r', s=10)
-    print("max image = ", np.max(image[:,:,0]))
-    print("min image = ", np.min(image[:,:,0]))
-    print("max boundary = ", np.max(outer_boundary))
-    print("min boundary = ", np.min(outer_boundary))
-    print("max points = ", np.max(pospoints))
-    print("min points = ", np.min(pospoints))
+    for pt in pospoints:
+        plt.scatter(pt[0], pt[1], c='g', s=10)
+    for pt in negpoints:
+        plt.scatter(pt[0], pt[1], c='r', s=10)
+    # print("max image = ", np.max(image[:,:,0]))
+    # print("min image = ", np.min(image[:,:,0]))
+    # print("max boundary = ", np.max(outer_boundary))
+    # print("min boundary = ", np.min(outer_boundary))
+    # print("max points = ", np.max(pospoints))
+    # print("min points = ", np.min(pospoints))
 
     plt.imshow(image[:,:,0], cmap='gray')
     plt.imshow(outer_boundary, cmap='inferno', alpha=0.5)

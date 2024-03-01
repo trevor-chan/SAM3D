@@ -44,8 +44,6 @@ def redraw_image():
 
     # Draw the phase instruction below the last instruction line
     cv2.putText(img, phase_instruction, (10, y + 20), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (255, 255, 255), 1)
-
-
     cv2.imshow('image', img)
 
 # Mouse callback function for drawing points and lines
@@ -138,7 +136,9 @@ def main():
         neg_points_tosave = [[]]
         current_phase = "positive"  # Start with collecting positive points
 
+        cv2.namedWindow("image", cv2.WINDOW_NORMAL)
         cv2.imshow('image', img)  # Initial display
+        cv2.resizeWindow("image", 800, 800)
         cv2.setMouseCallback('image', click_event)
         redraw_image()  # Initial drawing of instructions
 
