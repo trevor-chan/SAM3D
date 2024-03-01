@@ -5,7 +5,7 @@ import cv2
 
 def segment(predictor,image, zidx, promptlists):
     predictor.set_image(image)
-    print("done2")
+    # print("done2")
     pospoints = promptlists[0]
     negpoints = promptlists[1]
 
@@ -21,10 +21,10 @@ def segment(predictor,image, zidx, promptlists):
 
     input_label = np.concatenate([input_labelpos, input_labelneg], axis=0)
 
-    print(input_point)
-    print(input_label)
+    # print(input_point)
+    # print(input_label)
 
-    print("done4")
+    # print("done4")
     masks, scores, logits = predictor.predict(
         point_coords=input_point,
         point_labels=input_label,
@@ -40,10 +40,10 @@ def segment(predictor,image, zidx, promptlists):
         multimask_output=False,
     )
 
-    print("done5")
+    # print("done5")
     final_mask = masks.astype(np.uint8)
-    print(final_mask.shape)
-    print(final_mask)
+    # print(final_mask.shape)
+    # print(final_mask)
 
     # Remove the singleton dimension from final_mask
     final_mask_squeezed = np.squeeze(final_mask)
@@ -67,33 +67,23 @@ def segment(predictor,image, zidx, promptlists):
     # Find the outer boundary by subtracting the eroded mask from the original mask
     outer_boundary = final_mask_squeezed - eroded_mask
 
-    plt.imshow(outer_boundary, cmap='gray')
+
+    for i in pospoints:
+        plt.scatter(i[0], i[1], c='g', s=10)
+    for i in negpoints:
+        plt.scatter(i[0], i[1], c='r', s=10)
+    print("max image = ", np.max(image[:,:,0]))
+    print("min image = ", np.min(image[:,:,0]))
+    print("max boundary = ", np.max(outer_boundary))
+    print("min boundary = ", np.min(outer_boundary))
+    print("max points = ", np.max(pospoints))
+    print("min points = ", np.min(pospoints))
+
+    plt.imshow(image[:,:,0], cmap='gray')
+    plt.imshow(outer_boundary, cmap='inferno', alpha=0.5)
     plt.show()
     return final_mask_squeezed, outer_boundary
 
-arrays = [] #put np arrays for each image here
-prompts = [[[(100,0),(0,100)],[(50,0),(0,50)]]]
-
-for i in range(len(arrays)):
-
-    image = arrays[i]
-
-    checkpointfilepath = r"C:\\Users\\aarus\\Downloads\\sam_vit_h_4b8939.pth"
-    import sys
-    sys.path.append("..")
-    from segment_anything import sam_model_registry, SamPredictor
-
-
-    sam_checkpoint = checkpointfilepath
-    model_type = "vit_h"
-
-    # device = "cuda"
-
-    sam = sam_model_registry[model_type](checkpoint=sam_checkpoint)
-    # sam.to(device=device)
-
-    predictor = SamPredictor(sam)
-    segment(image, 0, [prompts[i][0],prompts[i][1]])
 
 print("done")
 
