@@ -53,29 +53,19 @@ def segment(predictor,image, promptlists):
     # Find the outer boundary by subtracting the eroded mask from the original mask
     outer_boundary = final_mask_squeezed - eroded_mask
 
-    fig = plt.figure(figsize=(2,2))
-    ax = fig.add_subplot()
-    ax.set_xticks([])
-    ax.set_yticks([])
-    # ax.set_axis_off()
-    for pt in pospoints:
-        ax.scatter(pt[0], pt[1], c='g', s=10)
-    for pt in negpoints:
-        ax.scatter(pt[0], pt[1], c='r', s=10)
-    # print("max image = ", np.max(image[:,:,0]))
-    # print("min image = ", np.min(image[:,:,0]))
-    # print("max boundary = ", np.max(outer_boundary))
-    # print("min boundary = ", np.min(outer_boundary))
-    # print("max points = ", np.max(pospoints))
-    # print("min points = ", np.min(pospoints))
+    # fig = plt.figure(figsize=(2,2))
+    # ax = fig.add_subplot()
+    # ax.set_xticks([])
+    # ax.set_yticks([])
+    # for pt in pospoints:
+    #     ax.scatter(pt[0], pt[1], c='g', s=10)
+    # for pt in negpoints:
+    #     ax.scatter(pt[0], pt[1], c='r', s=10)
 
-    ax.imshow(image[:,:,0], cmap='gray')
-    # print(np.max(image[:,:,0]))
-    # sort = (np.argsort(image[:,:,0]))
-    # print(np.max(sort))
-    # print(np.max(image[0,:,0]))
-    ax.imshow(outer_boundary, cmap='inferno', alpha=0.5)
-    plt.show()
+    # ax.imshow(image[:,:,0], cmap='gray')
+
+    # ax.imshow(outer_boundary, cmap='inferno', alpha=0.5)
+    # plt.show()
     return final_mask_squeezed, outer_boundary
 
 
