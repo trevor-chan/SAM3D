@@ -15,7 +15,7 @@ def redraw_image():
     for polyline in pos_points:
         for i, point in enumerate(polyline):
             cv2.circle(img, point, 3, (0, 255, 0), -1)  # Green for positive points
-            cv2.putText(img, str(point), (point[0] + 5, point[1] + 15), cv2.FONT_HERSHEY_SIMPLEX, 0.3, (0, 255, 0), 1)
+            # cv2.putText(img, str(point), (point[0] + 5, point[1] + 15), cv2.FONT_HERSHEY_SIMPLEX, 0.3, (0, 255, 0), 1)
             if i > 0:
                 cv2.line(img, polyline[i - 1], point, (0, 255, 0), 2)
 
@@ -23,7 +23,7 @@ def redraw_image():
     for polyline in neg_points:
         for i, point in enumerate(polyline):
             cv2.circle(img, point, 3, (0, 0, 255), -1)  # Red for negative points
-            cv2.putText(img, str(point), (point[0] + 5, point[1] + 15), cv2.FONT_HERSHEY_SIMPLEX, 0.3, (0, 0, 255), 1)
+            # cv2.putText(img, str(point), (point[0] + 5, point[1] + 15), cv2.FONT_HERSHEY_SIMPLEX, 0.3, (0, 0, 255), 1)
             if i > 0:
                 cv2.line(img, polyline[i - 1], point, (0, 0, 255), 2)
 
@@ -55,15 +55,11 @@ def click_event(event, x, y, flags, param):
         point = (x, y)
         if current_phase == "positive":
             pos_points[-1].append(point)  # Add to the last list of positive polylines
-            # pos_points_tosave[-1].append((y,base_img.shape[0]-x,0))
             pos_points_tosave[-1].append((y, x, 0))
-            # pos_points_tosave[-1].append((x, y,0))
 
         else:
             neg_points[-1].append(point)  # Add to the last list of negative polylines
-            # pos_points_tosave[-1].append((y, base_img.shape[0]-x,0))
             neg_points_tosave[-1].append((y, x, 0))
-            # neg_points_tosave[-1].append((x, y,0))
         redraw_image()  # Redraw the image with the new point
 
 # Function to start a new polyline
@@ -119,13 +115,7 @@ def switch_phase():
     redraw_image()  # Redraw the image to update the instructions and visible points
 
 
-def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("-p", "--path", help="path to the slice directory")
-    args = parser.parse_args()
-    # Load the JPEG image
-    #filepaths is all the files in a specific folder
-    folder = args.path
+def main(folder='tempdir'):
     listofdicts = []
     filepaths = sorted([os.path.join(folder, f) for f in os.listdir(folder) if f.endswith('.png')])
     print(filepaths)
@@ -179,4 +169,7 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-p", "--path", help="path to the slice directory")
+    args = parser.parse_args()
+    main(args.path)
