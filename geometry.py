@@ -56,8 +56,8 @@ class Transform:
         array = self.__simple_padding(array)
 
         center = np.array(array.shape)/2
-        offset = center - self.rotation.apply(center)
-        tarray = scipy.ndimage.affine_transform(array, transform[:-1,:-1], order=order, mode='constant', cval=0, offset=offset)
+        offset = center - self.rotation.apply(center, inverse=True)
+        tarray = scipy.ndimage.affine_transform(array, transform[:-1,:-1].T, order=order, mode='constant', cval=0, offset=offset)
         return tarray
     
         

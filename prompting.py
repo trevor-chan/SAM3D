@@ -10,6 +10,7 @@ def redraw_image():
 
     img = base_img.copy()  # Reset the image to the original without drawings
 
+
     # Draw all positive polylines
     for polyline in pos_points:
         for i, point in enumerate(polyline):
@@ -54,12 +55,15 @@ def click_event(event, x, y, flags, param):
         point = (x, y)
         if current_phase == "positive":
             pos_points[-1].append(point)  # Add to the last list of positive polylines
-            pos_points_tosave[-1].append((x, y,0))
-            # pos_points_tosave[-1].append((y, x, 0))
+            # pos_points_tosave[-1].append((y,base_img.shape[0]-x,0))
+            pos_points_tosave[-1].append((y, x, 0))
+            # pos_points_tosave[-1].append((x, y,0))
+
         else:
             neg_points[-1].append(point)  # Add to the last list of negative polylines
-            neg_points_tosave[-1].append((x, y,0))
-            # neg_points_tosave[-1].append((y, x, 0))
+            # pos_points_tosave[-1].append((y, base_img.shape[0]-x,0))
+            neg_points_tosave[-1].append((y, x, 0))
+            # neg_points_tosave[-1].append((x, y,0))
         redraw_image()  # Redraw the image with the new point
 
 # Function to start a new polyline
