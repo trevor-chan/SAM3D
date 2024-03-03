@@ -1,6 +1,7 @@
 import numpy as np
 import cv2
 import json
+import tqdm
 
 def scale_forward (point, shape):
     return point / np.array(shape) * 2 - 1
@@ -41,12 +42,17 @@ def global_to_local (image, transform):
     return transform.apply_to_array(image)
 
 
-def get_prompt_slices(image, dirpath, transform_list):
+def get_prompt_slices(image, dirpath, transform_list, reslice=True):
     slices_list = []
-    for a, t in enumerate(transform_list):
-        transformed_img = global_to_local(image, t)
-        slice_transformed_img = transformed_img[:,:,transformed_img.shape[2]//2]
-        cv2.imwrite(f'{dirpath}/slice_{str(a).zfill(2)}.png', slice_transformed_img)
+    transformed_arrays = []
+    for a, t in tqdm.tqdm(enumerate(transform_list), desc='Making prompt slices'):
+        if reslice:
+            transformed_img = global_to_local(image, t)
+            transformed_arrays.append(transformed_img)
+            slice_transformed_img = transformed_img[:,:,transformed_img.shape[2]//2]
+            cv2.imwrite(f'{dirpath}/slice_{str(a).zfill(2)}.png', slice_transformed_img)
+        else:
+            transformed_img = t.simple_padding(image)
 
         slice_info = dict()
         slice_info['idx'] = transformed_img.shape[2]//2
@@ -54,7 +60,7 @@ def get_prompt_slices(image, dirpath, transform_list):
         slice_info['shape'] = transformed_img.shape
         slices_list.append(slice_info)    
 
-    return slices_list
+    return slices_list, transformed_arrays
 
 def get_line_segments(slices_list, pos_polylines_slices, neg_polylines_slices):
     pos_seg = []
@@ -69,9 +75,7 @@ def get_line_segments(slices_list, pos_polylines_slices, neg_polylines_slices):
             global_line = []
             for point in line:
                 point = point[:2] + [idx]
-                print(point)
                 transformed_point = index_to_coord(point, transform_curr, shape)
-                print(transformed_point)
                 global_line.append(transformed_point)
             for j in range(len(global_line) - 1):
                 pos_seg.append([global_line[j], global_line[j + 1]])

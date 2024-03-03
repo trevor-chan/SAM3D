@@ -37,7 +37,7 @@ class Transform:
         return self.__get_matrix(inverse=inverse, scale=scale)
     
 
-    def __simple_padding(self, array, constant=0):
+    def simple_padding(self, array, constant=0):
         assert array.shape[0] == array.shape[1] == array.shape[2], 'array should be squished to square'
         hypotenuse = 3 ** 0.5 * array.shape[0]
         padwidth = int((hypotenuse - array.shape[0]) / 2)
@@ -53,7 +53,7 @@ class Transform:
         transform = self.__get_matrix(inverse=inverse)
 
         # padding to avoid losing information
-        array = self.__simple_padding(array)
+        array = self.simple_padding(array)
 
         center = np.array(array.shape)/2
         offset = center - self.rotation.apply(center, inverse=True)
