@@ -14,18 +14,18 @@ def redraw_image():
     # Draw all positive polylines
     for polyline in pos_points:
         for i, point in enumerate(polyline):
-            cv2.circle(img, point, 3, (0, 255, 0), -1)  # Green for positive points
-            cv2.putText(img, str(point), (point[0] + 5, point[1] + 15), cv2.FONT_HERSHEY_SIMPLEX, 0.3, (0, 255, 0), 1)
+            cv2.circle(img, point, 2, (0, 255, 0), -1)  # Green for positive points
+            # cv2.putText(img, str(point), (point[0] + 5, point[1] + 15), cv2.FONT_HERSHEY_SIMPLEX, 0.3, (0, 255, 0), 1)
             if i > 0:
-                cv2.line(img, polyline[i - 1], point, (0, 255, 0), 2)
+                cv2.line(img, polyline[i - 1], point, (0, 255, 0), thickness=1)
 
     # Draw all negative polylines
     for polyline in neg_points:
         for i, point in enumerate(polyline):
-            cv2.circle(img, point, 3, (0, 0, 255), -1)  # Red for negative points
-            cv2.putText(img, str(point), (point[0] + 5, point[1] + 15), cv2.FONT_HERSHEY_SIMPLEX, 0.3, (0, 0, 255), 1)
+            cv2.circle(img, point, 2, (0, 0, 255), -1)  # Red for negative points
+            # cv2.putText(img, str(point), (point[0] + 5, point[1] + 15), cv2.FONT_HERSHEY_SIMPLEX, 0.3, (0, 0, 255), 1)
             if i > 0:
-                cv2.line(img, polyline[i - 1], point, (0, 0, 255), 2)
+                cv2.line(img, polyline[i - 1], point, (0, 0, 255), thickness=1)
 
     # Draw instructions
     instructions = "Left-click to draw. 'A' to switch. 'W' for new pos line." "\n" "'S' for new neg line. 'D' to delete. 'Q' to quit."
@@ -55,15 +55,11 @@ def click_event(event, x, y, flags, param):
         point = (x, y)
         if current_phase == "positive":
             pos_points[-1].append(point)  # Add to the last list of positive polylines
-            # pos_points_tosave[-1].append((y,base_img.shape[0]-x,0))
             pos_points_tosave[-1].append((y, x, 0))
-            # pos_points_tosave[-1].append((x, y,0))
 
         else:
             neg_points[-1].append(point)  # Add to the last list of negative polylines
-            # pos_points_tosave[-1].append((y, base_img.shape[0]-x,0))
             neg_points_tosave[-1].append((y, x, 0))
-            # neg_points_tosave[-1].append((x, y,0))
         redraw_image()  # Redraw the image with the new point
 
 # Function to start a new polyline
@@ -77,7 +73,7 @@ def start_new_polyline(polyline_type):
         neg_points.append([])  # Start a new list for a new negative polyline
         neg_points_tosave.append([])
         current_phase = 'negative'
-    print(f"Started a new {'positive' if polyline_type == 'positive' else 'negative'} polyline.")
+    # print(f"Started a new {'positive' if polyline_type == 'positive' else 'negative'} polyline.")
     redraw_image()  # Redraw the image to update the instructions and visible points
 
 # Function to start a new polyline
@@ -115,20 +111,13 @@ def switch_phase():
     else:
         neg_points.append([])
         neg_points_tosave.append([])
-    print(f"Switched to {'negative' if current_phase == 'negative' else 'positive'} points collection.")
+    # print(f"Switched to {'negative' if current_phase == 'negative' else 'positive'} points collection.")
     redraw_image()  # Redraw the image to update the instructions and visible points
 
 
-def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("-p", "--path", help="path to the slice directory")
-    args = parser.parse_args()
-    # Load the JPEG image
-    #filepaths is all the files in a specific folder
-    folder = args.path
+def main(folder='tempdir'):
     listofdicts = []
     filepaths = sorted([os.path.join(folder, f) for f in os.listdir(folder) if f.endswith('.png')])
-    print(filepaths)
     # Copy of the original image to use as a base for redrawing
     for filepath in filepaths:
 
@@ -167,16 +156,18 @@ def main():
         # if len(neg_points_tosave)==0: neg_points_tosave.append([])
         dictionary = {"img": filepath, "pos_polylines": pos_points_tosave, "neg_polylines": neg_points_tosave}
         listofdicts.append(dictionary)
-    filename = folder + 'prompts.json'
+    filename = folder + '/prompts.json'
 
     # Write the list of dictionaries to the file in JSON format
     with open(filename, 'w') as f:
         json.dump(listofdicts, f, indent=4)
 
-    print(f"Data has been saved to {filename}")
-    print(listofdicts)
+    # print(f"Data has been saved to {filename}")
     return listofdicts
 
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-p", "--path", help="path to the slice directory")
+    args = parser.parse_args()
+    main(args.path)

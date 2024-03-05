@@ -70,3 +70,14 @@ def get_cube_transforms(full=False):
     for vec in cube_vertices:
             transforms.append(rot_from_vecs(vec))
     return transforms
+
+def get_ortho_transforms(full=False):
+    if full:
+        ortho_vertices = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1], 
+                                  [-1, 0, 0], [0, -1, 0], [0, 0, -1]])
+    else:
+        ortho_vertices = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
+    transforms = []
+    for vec in ortho_vertices:
+            transforms.append(rot_from_vecs(vec))
+    return transforms

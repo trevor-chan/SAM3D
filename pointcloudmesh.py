@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import scipy.spatial.distance
 
 input_path = ''  # Your input path here
-dataname = 'C:\\Users\\aarus\\Downloads\\points_with_noise.txt'  # Your data file name here
+# dataname = 'C:\\Users\\aarus\\Downloads\\points_with_noise.txt'  # Your data file name here
 max_row = 345376  # Maximum row to read, based on your requirement
 
 # Initialize an empty list to hold the data

@@ -2,6 +2,7 @@ import numpy as np
 from PIL import Image
 import os
 import math
+import mrcfile
 
 
 def load3dmatrix(folder):
@@ -11,8 +12,6 @@ def load3dmatrix(folder):
     image= np.stack([np.array(im) for im in images])
 
     return image
-
-folder = r"C:\Users\aarus\Downloads\slices_for_prompting\I1351301"
 
 def padtocube(array):
     shape = array.shape
@@ -25,3 +24,7 @@ def padtocube(array):
     right_pad3 = max_dim - shape[2] -  left_pad3
     padded_array = np.pad(array, ((left_pad1, right_pad1), (left_pad2, right_pad2), (left_pad3, right_pad3)), mode='constant', constant_values=0)
     return padded_array
+
+def save_mrc(array, filepath):
+    with mrcfile.new(filepath, overwrite=True) as mrc:
+        mrc.set_data(array.astype(np.float32))
