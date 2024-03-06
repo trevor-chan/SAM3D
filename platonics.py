@@ -2,7 +2,7 @@ import numpy as np
 import scipy
 import geometry
 
-def rot_from_vecs(vec1, vec2=[1,0,0]):
+def rot_from_vecs(vec1, vec2=[0,0,1]):
     matrix = rotation_matrix_from_vectors(vec1, vec2)
     transform = geometry.Transform(translation=[0,0,0], rotation=scipy.spatial.transform.Rotation.from_matrix(matrix).as_euler('zyx', degrees=False))
     return transform
@@ -18,6 +18,8 @@ def rotation_matrix_from_vectors(vec1, vec2):
     v = np.cross(a, b)
     c = np.dot(a, b)
     s = np.linalg.norm(v)
+    if s == 0:
+        return np.eye(3)
     kmat = np.array([[0, -v[2], v[1]], [v[2], 0, -v[0]], [-v[1], v[0], 0]])
     rotation_matrix = np.eye(3) + kmat + kmat.dot(kmat) * ((1 - c) / (s ** 2))
     return rotation_matrix
@@ -52,6 +54,11 @@ def get_icosahedron_transforms(full=False):
         icosahedron_vertices = np.array([[0,1,gr],[0,1,-gr],
                                         [1,gr,0],[1,-gr,0],
                                         [gr,0,1],[-gr,0,1]])
+        
+# ( 0, ±1, ±φ)
+# (±1, ±φ,  0)
+# (±φ,  0, ±1)
+
     transforms = []
     for vec in icosahedron_vertices:
         transforms.append(rot_from_vecs(vec))
@@ -76,8 +83,9 @@ def get_ortho_transforms(full=False):
         ortho_vertices = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1], 
                                   [-1, 0, 0], [0, -1, 0], [0, 0, -1]])
     else:
-        ortho_vertices = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
+        ortho_vertices = np.array([[0, 0, 0], [0, 1, 0], [0, 0, 1]])
     transforms = []
-    for vec in ortho_vertices:
-            transforms.append(rot_from_vecs(vec))
+    transforms.append(geometry.Transform(translation=[0,0,0], rotation=[0,0,0]))
+    transforms.append(geometry.Transform(translation=[0,0,0], rotation=[0,np.pi/2,0]))
+    transforms.append(geometry.Transform(translation=[0,0,0], rotation=[0,0,np.pi/2]))
     return transforms

@@ -3,15 +3,17 @@ import open3d as o3d
 from scipy.ndimage import binary_erosion, binary_dilation, binary_fill_holes
 import matplotlib.pyplot as plt
 
-def create_point_cloud(points, visualize=False, downsample=0, outliers=0, n_neighbors=20, std_ratio=2):
+def create_point_cloud(points, visualize=False, downsample=0, outliers=0, n_neighbors=20, radius=0.02, iterations=1):
     pcd = o3d.geometry.PointCloud()
     points = np.array([p for point in points for p in point])
     pcd.points = o3d.utility.Vector3dVector(points)
     if downsample > 0:
         pcd = pcd.uniform_down_sample(every_k_points=downsample)
     if outliers:
-        cl, ind = pcd.remove_statistical_outlier(nb_neighbors=n_neighbors, std_ratio=std_ratio)
-        pcd = pcd.select_by_index(ind)
+        # cl, ind = pcd.remove_statistical_outlier(nb_neighbors=n_neighbors, std_ratio=std_ratio)
+        for i in range(iterations):
+            cl, ind = pcd.remove_radius_outlier(nb_points=n_neighbors, radius=radius)
+            pcd = pcd.select_by_index(ind)
     if visualize:
         o3d.visualization.draw_geometries([pcd], window_name="Point Cloud")
     return pcd
