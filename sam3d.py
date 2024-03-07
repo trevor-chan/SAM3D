@@ -34,6 +34,8 @@ def main():
     parser.add_argument("-ch", "--checkpoint", help="location of the SAM model checkpoint", default="checkpoints/sam_vit_h_4b8939.pth")
     parser.add_argument("--reslice", help="if false, skip the initial reslicing step", default=1)
     parser.add_argument("--reprompt", help="if false, skip the initial prompting step", default=1)
+    parser.add_argument("--datatype", help="if false, skip the initial prompting step", default="png")
+
     args = parser.parse_args()
 
     # start timer:
@@ -54,7 +56,7 @@ def main():
     print('transforms made')
     
     # open image and get slices
-    image = utils.padtocube(utils.load3dmatrix(args.path))
+    image = utils.padtocube(utils.load3dmatrix(args.path, args.datatype))
     print('image loaded')
 
     # make a temporary directory to save the slices

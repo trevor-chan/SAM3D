@@ -3,14 +3,20 @@ from PIL import Image
 import os
 import math
 import mrcfile
+import pydicom as dicom
+import matplotlib.pyplot as plt
 
 
-def load3dmatrix(folder):
-    filepaths = [os.path.join(folder, f) for f in os.listdir(folder) if f.endswith('.png')]
+def load3dmatrix(folder, datatype):
+    filepaths = [os.path.join(folder, f) for f in os.listdir(folder) if f.endswith('.%s' % datatype)]
+    # print(dicom.dcmread(filepaths[0]).pixel_array)
     filepaths.sort()
-    images = [Image.open(f) for f in filepaths]
-    image= np.stack([np.array(im) for im in images])
-
+    if datatype == "png":
+        images = [Image.open(f) for f in filepaths]
+    if datatype == "dcm":
+        images = [dicom.dcmread(f).pixel_array for f in filepaths]
+    image = np.stack(images)
+    image = (image - np.amin(image)) / (np.amax(image) - np.amin(image)) * 255
     return image
 
 def padtocube(array):
@@ -28,3 +34,9 @@ def padtocube(array):
 def save_mrc(array, filepath):
     with mrcfile.new(filepath, overwrite=True) as mrc:
         mrc.set_data(array.astype(np.float32))
+
+def load_mrc(filepath):
+    with mrcfile.open(filepath) as mrc:
+        mrc_data = mrc.data
+        array = np.array(mrc_data)
+    return array
