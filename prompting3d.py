@@ -131,7 +131,7 @@ class NiiImageEditor:
             # Convert 3D point to 2D drawing coordinates
             print(point)
             if self.slice_axis == 0:  # X-axis
-                draw_x, draw_y = point[2], point[1]
+                draw_x, draw_y = point[1], point[2]
             elif self.slice_axis == 1:  # Y-axis
                 draw_x, draw_y = point[0], point[2]
             else:  # Z-axis
@@ -149,7 +149,7 @@ class NiiImageEditor:
                     prev_x, prev_y = prev_point[0], prev_point[2]
                 else:
                     prev_x, prev_y = prev_point[0], prev_point[1]
-                self.canvas.create_line(draw_x, draw_y, prev_x, prev_y, fill=color)
+                self.canvas.create_line(draw_y, draw_x, prev_y, prev_x, fill=color)
 
     def draw_polylines(self):
         self.canvas.delete("all")  # Clear existing canvas items
@@ -162,17 +162,17 @@ class NiiImageEditor:
             self.draw_polyline(polyline, "red")
 
 
-    def draw_points(self):
-        for polyline in self.pos_polylines:
-            for point in polyline:
-                x, y, _ = point
-                self.draw_point(x, y, "green")
-        for polyline in self.neg_polylines:
-            for point in polyline:
-                x, y, _ = point
-                self.draw_point(x, y, "red")
+    # def draw_points(self):
+    #     for polyline in self.pos_polylines:
+    #         for point in polyline:
+    #             x, y, _ = point
+    #             self.draw_point(x, y, "green")
+    #     for polyline in self.neg_polylines:
+    #         for point in polyline:
+    #             x, y, _ = point
+    #             self.draw_point(x, y, "red")
 
-    def draw_point(self, x, y, color, coordinates):
+    def draw_point(self, y, x, color, coordinates):
         radius = 5
         self.canvas.create_oval(x - radius, y - radius, x + radius, y + radius, fill=color, outline=color)
         # Optionally display 3D coordinates as text next to the point
@@ -200,7 +200,7 @@ class NiiImageEditor:
         self.update_status_label()
 
     def add_point(self, event):
-        x, y = event.x, event.y
+        y, x = event.x, event.y
         # Translate 2D canvas coordinates (x, y) into 3D image coordinates based on the slicing axis
         if self.slice_axis == 0:  # X-axis slicing
             point = (self.current_slice_index, x,y)
