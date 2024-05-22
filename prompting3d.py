@@ -7,6 +7,13 @@ path = r'C:\Users\aarus\Desktop\det\DET0001401_avg.nii'
 path = r"C:\Users\aarus\Downloads\vol_6\vol_6"
 import glob
 import os
+import tkinter as tk
+from PIL import Image, ImageTk
+import nibabel as nib
+import numpy as np
+import json
+import glob
+import os
 
 class NiiImageEditor:
     def __init__(self, master, file_path, slice_axis=2, is_folder=True):
@@ -24,7 +31,10 @@ class NiiImageEditor:
         self.pos_polylines = [[]]  # Each sublist represents a set of points forming a polyline
         self.neg_polylines = [[]]
         self.current_phase = 'positive'
-        
+        self.slices_with_points_x = set()
+        self.slices_with_points_y = set()
+        self.slices_with_points_z = set()
+
         self.master.title("NIfTI Image Editor")
         
         self.canvas = tk.Canvas(master, width=512, height=512)
@@ -46,7 +56,13 @@ class NiiImageEditor:
         self.status_label.pack(fill=tk.X)
 
         self.instructions_label = tk.Label(master, text="Instructions:\n1. Left-click to draw points.\n2. Press 'A' to switch phases.\n3. Press 'W' for new positive polyline.\n4. Press 'S' for new negative polyline.\n5. Press 'D' to delete.\n6. Press 'Q' to quit.", bg="lightgray")
-        self.instructions_label.pack(fill=tk.X)
+        self.instructions_label.pack(fill=tk.X) 
+
+        self.slice_buttons_frame = tk.Frame(master)
+        self.slice_buttons_frame.pack(fill=tk.X)
+
+        self.scale = 2
+        self.shape = self.nii_data.shape[0]
         
         self.update_image()
         self.add_close_button()
@@ -84,8 +100,6 @@ class NiiImageEditor:
             self.start_new_polyline(self.current_phase, force_new=True)
             self.update_image()
 
-
-
     def add_close_button(self):
         close_button = tk.Button(self.master, text="Close", command=self.on_close)
         close_button.pack()
@@ -101,54 +115,48 @@ class NiiImageEditor:
             slice_2d = self.nii_data[:, self.current_slice_index, :]
         else:  # Z-axis or default
             slice_2d = self.nii_data[:, :, self.current_slice_index]
-        # if self.slice_axis == 0 or self.slice_axis == 1:
-            # slice_2d = np.rot90(slice_2d)
-        # slice_2d = np.rot90(slice_2d)  # Rotate for a better view
         img = Image.fromarray(slice_2d).convert("L")
-        img = img.resize((256, 256), Image.ANTIALIAS)
+        img = img.resize((self.shape * self.scale, self.shape * self.scale), Image.ANTIALIAS)
         self.img_tk = ImageTk.PhotoImage(img)
         self.canvas.create_image(0, 0, anchor="nw", image=self.img_tk)
         self.draw_polylines()
-
+        self.update_slice_buttons()
 
     def start_new_polyline(self, polyline_type, force_new=False):
         # Only add a new polyline if the last one contains points or if forced
         if polyline_type == "positive":
-            if force_new or (self.pos_polylines[-1] and self.pos_polylines[-1][-1][2] == self.current_slice_index):
+            if force_new or (self.pos_polylines[-1] and self.pos_polylines[-1][-1][self.slice_axis] == self.current_slice_index):
                 self.pos_polylines.append([])
         else:
-            if force_new or (self.neg_polylines[-1] and self.neg_polylines[-1][-1][2] == self.current_slice_index):
+            if force_new or (self.neg_polylines[-1] and self.neg_polylines[-1][-1][self.slice_axis] == self.current_slice_index):
                 self.neg_polylines.append([])
         self.current_phase = polyline_type
 
     def draw_polyline(self, polyline, color):
-        # Check if all points in the polyline are in the current slice
-        all_points_in_slice = all(point[self.slice_axis] == self.current_slice_index for point in polyline)
-        
+        # Filter points to only those in the current slice
         points_on_slice = [point for point in polyline if point[self.slice_axis] == self.current_slice_index]
 
         for i, point in enumerate(points_on_slice):
             # Convert 3D point to 2D drawing coordinates
-            print(point)
             if self.slice_axis == 0:  # X-axis
-                draw_x, draw_y = point[1], point[2]
+                draw_x, draw_y = point[1] * self.scale, point[2] * self.scale
             elif self.slice_axis == 1:  # Y-axis
-                draw_x, draw_y = point[0], point[2]
+                draw_x, draw_y = point[0] * self.scale, point[2] * self.scale
             else:  # Z-axis
-                draw_x, draw_y = point[0], point[1]
+                draw_x, draw_y = point[0] * self.scale, point[1] * self.scale
             
             # Draw the point
             self.draw_point(draw_x, draw_y, color, point)
 
-            # Connect points with lines if all points are in the current slice
-            if all_points_in_slice and i > 0:
+            # Connect points with lines if they are consecutive in the same slice
+            if i > 0:
                 prev_point = points_on_slice[i-1]
                 if self.slice_axis == 0:
-                    prev_x, prev_y = prev_point[1], prev_point[2]
+                    prev_x, prev_y = prev_point[1] * self.scale, prev_point[2] * self.scale
                 elif self.slice_axis == 1:
-                    prev_x, prev_y = prev_point[0], prev_point[2]
+                    prev_x, prev_y = prev_point[0] * self.scale, prev_point[2] * self.scale
                 else:
-                    prev_x, prev_y = prev_point[0], prev_point[1]
+                    prev_x, prev_y = prev_point[0] * self.scale, prev_point[1] * self.scale
                 self.canvas.create_line(draw_y, draw_x, prev_y, prev_x, fill=color)
 
     def draw_polylines(self):
@@ -161,17 +169,6 @@ class NiiImageEditor:
         for polyline in self.neg_polylines:
             self.draw_polyline(polyline, "red")
 
-
-    # def draw_points(self):
-    #     for polyline in self.pos_polylines:
-    #         for point in polyline:
-    #             x, y, _ = point
-    #             self.draw_point(x, y, "green")
-    #     for polyline in self.neg_polylines:
-    #         for point in polyline:
-    #             x, y, _ = point
-    #             self.draw_point(x, y, "red")
-
     def draw_point(self, y, x, color, coordinates):
         radius = 5
         self.canvas.create_oval(x - radius, y - radius, x + radius, y + radius, fill=color, outline=color)
@@ -180,20 +177,17 @@ class NiiImageEditor:
         coordinates_text = f"({coordinates[0]}, {coordinates[1]}, {coordinates[2]})"
         self.canvas.create_text(x + text_offset, y + text_offset, text=coordinates_text, fill=color, font=("TkDefaultFont", 8))
 
-
-
-
-
     def delete_point(self):
         target_polylines = self.pos_polylines if self.current_phase == "positive" else self.neg_polylines
         if target_polylines[-1]:
             target_polylines[-1].pop()
             self.update_image()
+            self.update_slice_buttons()
+
     def redraw_image(self):
         self.canvas.delete("all")
         self.canvas.create_image(0, 0, anchor="nw", image=self.img_tk)
         self.draw_polylines()
-
 
     def switch_phase(self):
         self.current_phase = "negative" if self.current_phase == "positive" else "positive"
@@ -203,25 +197,29 @@ class NiiImageEditor:
         y, x = event.x, event.y
         # Translate 2D canvas coordinates (x, y) into 3D image coordinates based on the slicing axis
         if self.slice_axis == 0:  # X-axis slicing
-            point = (self.current_slice_index, x,y)
+            point = (self.current_slice_index, int(x / self.scale), int(y / self.scale))
+            self.slices_with_points_x.add(self.current_slice_index)
         elif self.slice_axis == 1:  # Y-axis slicing
-            point = (x, self.current_slice_index, y)
+            point = (int(x / self.scale), self.current_slice_index, int(y / self.scale))
+            self.slices_with_points_y.add(self.current_slice_index)
         else:  # Z-axis slicing, or default
-            point = (x, y, self.current_slice_index)
+            point = (int(x / self.scale), int(y / self.scale), self.current_slice_index)
+            self.slices_with_points_z.add(self.current_slice_index)
 
         print(point)
 
         # Add the point to the appropriate polyline list based on the current phase
         if self.current_phase == 'positive':
-            if not self.pos_polylines[-1] or self.pos_polylines[-1][-1][2] != self.current_slice_index:
+            if not self.pos_polylines[-1] or self.pos_polylines[-1][-1][self.slice_axis] != self.current_slice_index:
                 self.start_new_polyline("positive", force_new=True)
             self.pos_polylines[-1].append(point)
         else:  # 'negative' phase
-            if not self.neg_polylines[-1] or self.neg_polylines[-1][-1][2] != self.current_slice_index:
+            if not self.neg_polylines[-1] or self.neg_polylines[-1][-1][self.slice_axis] != self.current_slice_index:
                 self.start_new_polyline("negative", force_new=True)
             self.neg_polylines[-1].append(point)
-        
-        self.redraw_image()  # Update the display to include the new point
+
+        self.update_image()
+        self.update_slice_buttons()
 
     def switch_axis(self, axis):
         self.slice_axis = axis
@@ -230,7 +228,6 @@ class NiiImageEditor:
         self.slice_slider.config(to=self.max_slices)  # Adjust slider range
         self.slice_slider.set(0)  # Reset slider position
         self.update_image()
-
 
     def save_points(self):
         # Filter out empty polylines from positive and negative polylines
@@ -249,8 +246,32 @@ class NiiImageEditor:
         except Exception as e:
             print(f"Failed to save points: {e}")
 
+    def update_slice_buttons(self):
+        # Clear existing buttons
+        for widget in self.slice_buttons_frame.winfo_children():
+            widget.destroy()
+
+        # Add buttons for each slice with points based on the current axis
+        if self.slice_axis == 0:
+            for slice_index in sorted(self.slices_with_points_x):
+                btn = tk.Button(self.slice_buttons_frame, text=f"Slice {slice_index}", command=lambda idx=slice_index: self.go_to_slice(idx))
+                btn.pack(side=tk.LEFT)
+        elif self.slice_axis == 1:
+            for slice_index in sorted(self.slices_with_points_y):
+                btn = tk.Button(self.slice_buttons_frame, text=f"Slice {slice_index}", command=lambda idx=slice_index: self.go_to_slice(idx))
+                btn.pack(side=tk.LEFT)
+        else:
+            for slice_index in sorted(self.slices_with_points_z):
+                btn = tk.Button(self.slice_buttons_frame, text=f"Slice {slice_index}", command=lambda idx=slice_index: self.go_to_slice(idx))
+                btn.pack(side=tk.LEFT)
+
+    def go_to_slice(self, slice_index):
+        self.current_slice_index = slice_index
+        self.slice_slider.set(slice_index)
+        self.update_image()
+
     def on_mouse_wheel(self, event):
-    # Check the operating system
+        # Check the operating system
         if self.master.tk.call('tk', 'windowingsystem') == 'win32':
             # On Windows, event.delta gives 120 for scroll up and -120 for scroll down
             increment = -1 if event.delta > 0 else 1
@@ -276,9 +297,6 @@ class NiiImageEditor:
             
             self.start_new_polyline('positive', force_new=True)
             self.update_image()
-
-
-
 
 if __name__ == "__main__":
     root = tk.Tk()
