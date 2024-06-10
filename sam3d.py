@@ -24,7 +24,6 @@ import recomposition
 
 
 
-
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("-p", "--path", help="path to the image directory")

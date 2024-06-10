@@ -3,8 +3,8 @@ from PIL import Image, ImageTk
 import nibabel as nib
 import numpy as np
 import json
-path = r'C:\Users\aarus\Desktop\det\DET0001401_avg.nii'
-path = r"C:\Users\aarus\Downloads\vol_6\vol_6"
+# path = r'C:\Users\aarus\Desktop\det\DET0001401_avg.nii'
+path = r"test_image/vol_6"
 import glob
 import os
 import tkinter as tk
@@ -35,7 +35,7 @@ class NiiImageEditor:
         self.slices_with_points_y = set()
         self.slices_with_points_z = set()
 
-        self.master.title("NIfTI Image Editor")
+        self.master.title("Image Prompting")
         
         self.canvas = tk.Canvas(master, width=512, height=512)
         self.canvas.pack()
@@ -55,7 +55,7 @@ class NiiImageEditor:
         self.status_label = tk.Label(master, text="Current Phase: Positive", bg="lightgray")
         self.status_label.pack(fill=tk.X)
 
-        self.instructions_label = tk.Label(master, text="Instructions:\n1. Left-click to draw points.\n2. Press 'A' to switch phases.\n3. Press 'W' for new positive polyline.\n4. Press 'S' for new negative polyline.\n5. Press 'D' to delete.\n6. Press 'Q' to quit.", bg="lightgray")
+        self.instructions_label = tk.Label(master, text="Instructions:\n1. Left-click to draw points.\n2. Press 'A' to switch phases.\n3. Press 'W' for new positive polyline.\n4. Press 'S' for new negative polyline.\n5. Press 'D' to delete.\n6. Press 'Q' to quit.", anchor=tk.W, justify='left', bg="lightgray")
         self.instructions_label.pack(fill=tk.X) 
 
         self.slice_buttons_frame = tk.Frame(master)
@@ -116,7 +116,7 @@ class NiiImageEditor:
         else:  # Z-axis or default
             slice_2d = self.nii_data[:, :, self.current_slice_index]
         img = Image.fromarray(slice_2d).convert("L")
-        img = img.resize((self.shape * self.scale, self.shape * self.scale), Image.ANTIALIAS)
+        img = img.resize((self.shape * self.scale, self.shape * self.scale), Image.LANCZOS)
         self.img_tk = ImageTk.PhotoImage(img)
         self.canvas.create_image(0, 0, anchor="nw", image=self.img_tk)
         self.draw_polylines()
