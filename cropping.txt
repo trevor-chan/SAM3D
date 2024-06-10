@@ -1,0 +1,5 @@
+- add buttons for cropping option instead of the keyboard
+- have rectangle across the slides not just on one slide
+- test on cropping
+    1. to see if it crops the right image
+    2. to see if the coordinates are correct

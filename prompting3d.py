@@ -1,12 +1,4 @@
-import tkinter as tk
-from PIL import Image, ImageTk
-import nibabel as nib
-import numpy as np
-import json
-# path = r'C:\Users\aarus\Desktop\det\DET0001401_avg.nii'
-path = r"test_image/vol_6"
-import glob
-import os
+path = "test_image/vol_6"
 import tkinter as tk
 from PIL import Image, ImageTk
 import nibabel as nib
@@ -34,8 +26,11 @@ class NiiImageEditor:
         self.slices_with_points_x = set()
         self.slices_with_points_y = set()
         self.slices_with_points_z = set()
+        self.mode = 'prompting'
+        self.crop_box = None
+        self.start_x = self.start_y = 0
 
-        self.master.title("Image Prompting")
+        self.master.title("NIfTI Image Editor")
         
         self.canvas = tk.Canvas(master, width=512, height=512)
         self.canvas.pack()
@@ -51,11 +46,13 @@ class NiiImageEditor:
         self.master.bind("<s>", lambda event: self.start_new_polyline("negative"))
         self.master.bind("<d>", lambda event: self.delete_point())
         self.master.bind("<q>", lambda event: self.on_close())
+        self.master.bind("<c>", lambda event: self.toggle_cropping_mode())
 
-        self.status_label = tk.Label(master, text="Current Phase: Positive", bg="lightgray")
+
+        self.status_label = tk.Label(master, text="Mode: Prompting | Current Phase: Positive", bg="lightgray")
         self.status_label.pack(fill=tk.X)
 
-        self.instructions_label = tk.Label(master, text="Instructions:\n1. Left-click to draw points.\n2. Press 'A' to switch phases.\n3. Press 'W' for new positive polyline.\n4. Press 'S' for new negative polyline.\n5. Press 'D' to delete.\n6. Press 'Q' to quit.", anchor=tk.W, justify='left', bg="lightgray")
+        self.instructions_label = tk.Label(master, text="Instructions:\n1. Left-click to draw points.\n2. Press 'A' to switch phases.\n3. Press 'W' for new positive polyline.\n4. Press 'S' for new negative polyline.\n5. Press 'D' to delete.\n6. Press 'C' to enter cropping mode.\n7. Press 'Q' to quit.", bg="lightgray", anchor=tk.W, justify=tk.LEFT)
         self.instructions_label.pack(fill=tk.X) 
 
         self.slice_buttons_frame = tk.Frame(master)
@@ -66,6 +63,7 @@ class NiiImageEditor:
         
         self.update_image()
         self.add_close_button()
+        self.add_crop_buttons()
         # In __init__, bind keys to switch axes
         self.master.bind("<x>", lambda event: self.switch_axis(0))
         self.master.bind("<y>", lambda event: self.switch_axis(1))
@@ -78,7 +76,8 @@ class NiiImageEditor:
 
     def update_status_label(self):
         phase_text = "Positive" if self.current_phase == "positive" else "Negative"
-        self.status_label.config(text=f"Current Phase: {phase_text}")
+        mode_text = "Cropping" if self.mode == "cropping" else "Prompting"
+        self.status_label.config(text=f"Mode: {mode_text} | Current Phase: {phase_text}")
 
     def load_pngs_as_array(self, folder_path):
         # Find all PNG files in the folder, sorted alphabetically
@@ -104,6 +103,59 @@ class NiiImageEditor:
         close_button = tk.Button(self.master, text="Close", command=self.on_close)
         close_button.pack()
 
+    def add_crop_buttons(self):
+        apply_crop_button = tk.Button(self.master, text="Apply Crop", command=self.apply_crop)
+        apply_crop_button.pack()
+
+    def toggle_cropping_mode(self):
+        if self.mode == 'prompting':
+            self.enable_cropping_mode()
+        else:
+            self.disable_cropping_mode()
+
+    def enable_cropping_mode(self):
+        self.mode = 'cropping'
+        self.update_status_label()
+        self.canvas.bind("<Button-1>", self.start_crop)
+        self.canvas.bind("<B1-Motion>", self.draw_crop_rectangle)
+        self.canvas.bind("<ButtonRelease-1>", self.finish_crop_rectangle)
+
+    def disable_cropping_mode(self):
+        self.mode = 'prompting'
+        self.update_status_label()
+        self.canvas.bind("<Button-1>", self.add_point)
+        self.canvas.unbind("<B1-Motion>")
+        self.canvas.unbind("<ButtonRelease-1>")
+
+    def start_crop(self, event):
+        self.start_x, self.start_y = event.x, event.y
+        self.crop_box = self.canvas.create_rectangle(self.start_x, self.start_y, self.start_x, self.start_y, outline='red')
+
+    def draw_crop_rectangle(self, event):
+        self.canvas.coords(self.crop_box, self.start_x, self.start_y, event.x, event.y)
+
+    def finish_crop_rectangle(self, event):
+        self.end_x, self.end_y = event.x, event.y
+        self.canvas.unbind("<B1-Motion>")
+        self.canvas.unbind("<ButtonRelease-1>")
+
+    def apply_crop(self):
+        if self.crop_box:
+            x0, y0, x1, y1 = self.canvas.coords(self.crop_box)
+            x0, y0, x1, y1 = int(x0/self.scale), int(y0/self.scale), int(x1/self.scale), int(y1/self.scale)
+            if self.slice_axis == 0:  # X-axis
+                self.nii_data = self.nii_data[:, y0:y1, x0:x1]
+            elif self.slice_axis == 1:  # Y-axis
+                self.nii_data = self.nii_data[y0:y1, :, x0:x1]
+            else:  # Z-axis
+                self.nii_data = self.nii_data[y0:y1, x0:x1, :]
+            self.max_slices = self.nii_data.shape[self.slice_axis] - 1
+            self.slice_slider.config(to=self.max_slices)  # Adjust slider range
+            self.slice_slider.set(0)  # Reset slider position
+            self.current_slice_index = 0
+            self.mode = 'prompting'
+            self.update_status_label()
+            self.update_image()
     def on_close(self):
         self.save_points()
         self.master.destroy()
@@ -194,6 +246,8 @@ class NiiImageEditor:
         self.update_status_label()
 
     def add_point(self, event):
+        if self.mode == 'cropping':
+            return  # Disable adding points in cropping mode
         y, x = event.x, event.y
         # Translate 2D canvas coordinates (x, y) into 3D image coordinates based on the slicing axis
         if self.slice_axis == 0:  # X-axis slicing
@@ -299,6 +353,7 @@ class NiiImageEditor:
             self.update_image()
 
 if __name__ == "__main__":
+    path = r"test_image/vol_6"
     root = tk.Tk()
     app = NiiImageEditor(root, path, slice_axis=2)
     root.mainloop()
