@@ -370,29 +370,30 @@ if __name__ == "__main__":
     #         initial_points = json.load(f)
     # except FileNotFoundError:
     #     initial_points = None
-    initial_points = {
-    "positive": [
-        [
-            [50, 100, 30],
-            [55, 195, 30],
-            [60, 110, 30]
-        ],
-        [
-            [80, 150, 50],
-            [85, 155, 50],
-            [90, 160, 50]
-        ]
-    ],
-    "negative": [
-        [
-            [120, 200, 40],
-            [125, 205, 40],
-            [130, 210, 40]
-        ]
-    ]
-}
-    
-    path = r"/Users/aarushsahni/Documents/Research/vol_6"
+#     initial_points = {
+#     "positive": [
+#         [
+#             [50, 100, 30],
+#             [55, 195, 30],
+#             [60, 110, 30]
+#         ],
+#         [
+#             [80, 150, 50],
+#             [85, 155, 50],
+#             [90, 160, 50]
+#         ]
+#     ],
+#     "negative": [
+#         [
+#             [120, 200, 40],
+#             [125, 205, 40],
+#             [130, 210, 40]
+#         ]
+#     ]
+# }
+    initial_points = None
+    # path = r"/Users/aarushsahni/Documents/Research/vol_6"
+    path = r"/Users/amyfang/Desktop/SAM3D/vol_6"
     app = NiiImageEditor(root, path, slice_axis=2, initial_points=initial_points)
     root.mainloop()
     print(json.load(open("final_points.json")))
