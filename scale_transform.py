@@ -131,7 +131,7 @@ def parse_prompts(folder, slices_list, img_shape):
         for line in prompt_points[k]:
             for point in line:
                 for d in point:
-                    d = float(d)# + padding_constant
+                    d = float(d) + padding_constant
 
     # pos_polylines_slices = []
     # neg_polylines_slices = []
