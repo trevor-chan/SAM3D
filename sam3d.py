@@ -20,6 +20,7 @@ import platonics
 import segmentfunction
 import prompting
 import recomposition
+import reprompting3d
 
 
 
@@ -68,9 +69,9 @@ def main():
     else:
         slices_list, transformed_arrays = scale_transform.get_prompt_slices(image, tempdir, transform_list, reslice=False)
     
-    #call prompting script
+    # call prompting script
     if int(args.reprompt):
-        prompting.main(tempdir)
+        reprompting3d.main(tempdir)
     
     # parse prompts
     pos_seg, neg_seg = scale_transform.parse_prompts(tempdir, slices_list)
