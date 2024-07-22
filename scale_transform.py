@@ -62,6 +62,10 @@ def get_prompt_slices(image, dirpath, transform_list, reslice=True):
 
     return slices_list, transformed_arrays
 
+
+# Get line segments - we no longer need to perform a rotation transformation back to the global coordinate system (index to coord), but we do 
+# Still need to perform a scaling (index to coord but with a zero rotation transform), then we also don't want to assume that every slice
+# has received prompting (len(slices_list) may be less than the length of pos_polylines_slices or neg_polylines_slices
 def get_line_segments(slices_list, pos_polylines_slices, neg_polylines_slices):
     pos_seg = []
     neg_seg = []
@@ -74,6 +78,7 @@ def get_line_segments(slices_list, pos_polylines_slices, neg_polylines_slices):
         for line in pos_polylines_slices[i]:
             global_line = []
             for point in line:
+                print(f'point {point}')
                 point = point[:2] + [idx]
                 transformed_point = index_to_coord(point, transform_curr, shape)
                 global_line.append(transformed_point)
@@ -116,15 +121,28 @@ def normalize (image):
     stacked = np.stack([image, image, image], axis=2)
     return stacked
 
-def parse_prompts(folder, slices_list):
-    with open(folder + '/prompts.json', 'r') as file:
+def parse_prompts(folder, slices_list, img_shape):
+    with open(folder + '/points.json', 'r') as file:
         prompt_points = json.load(file)
-    pos_polylines_slices = []
-    neg_polylines_slices = []
+    assert len(img_shape) == 3
+    assert img_shape[0] == img_shape[1] == img_shape[2], "right now only takes cubes as input"
+    padding_constant = (np.sqrt(3) - 1) / 2 * img_shape[0]
+    for k in prompt_points.keys():
+        for line in prompt_points[k]:
+            for point in line:
+                for d in point:
+                    d = float(d)# + padding_constant
 
-    for prompt in prompt_points:
-        pos_polylines_slices.append(prompt['pos_polylines'])
-        neg_polylines_slices.append(prompt['neg_polylines'])
+    # pos_polylines_slices = []
+    # neg_polylines_slices = []
+
+    # pos_polylines_slices.append(prompt_points['positive'])
+    # neg_polylines_slices.append(prompt_points['negative'])
+
+    pos_polylines_slices = [prompt_points['positive']]
+    neg_polylines_slices = [prompt_points['negative']]
+
+
 
     # get pos, neg line segments
     pos_seg, neg_seg = get_line_segments(slices_list, pos_polylines_slices, neg_polylines_slices)

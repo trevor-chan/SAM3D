@@ -6,16 +6,8 @@ import json
 import glob
 import os
 
-import tkinter as tk
-from PIL import Image, ImageTk
-import nibabel as nib
-import numpy as np
-import json
-import glob
-import os
-
 class NiiImageEditor:
-    def __init__(self, master, file_path, slice_axis=2, is_folder=True, initial_points=None):
+    def __init__(self, master, file_path, slice_axis=2, is_folder=True, initial_points=None, savepath='tempdir'):
         self.master = master
         if "nii" in file_path:
             is_folder = False
@@ -35,6 +27,7 @@ class NiiImageEditor:
             1: set(),  # Y-axis
             2: set()   # Z-axis
         }
+        self.savepath = savepath + "/points.json"
 
         self.master.title("NIfTI Image Editor")
         
@@ -134,7 +127,7 @@ class NiiImageEditor:
         close_button.pack()
 
     def on_close(self):
-        self.save_points("final_points.json")
+        self.save_points()
         self.master.destroy()
 
     def update_image(self):
@@ -228,7 +221,7 @@ class NiiImageEditor:
         else:
             point = (int(x / self.scale), int(y / self.scale), self.current_slice_index)
 
-        print(point)
+        # print(point)
 
         # Add the point to all relevant sets
         self.slices_with_points[0].add(point[0])
@@ -255,7 +248,7 @@ class NiiImageEditor:
         self.slice_slider.set(0)
         self.update_image()
 
-    def save_points(self, filename="points.json"):
+    def save_points(self):
         filtered_pos_polylines = [polyline for polyline in self.pos_polylines if polyline]
         filtered_neg_polylines = [polyline for polyline in self.neg_polylines if polyline]
 
@@ -265,7 +258,7 @@ class NiiImageEditor:
         }
 
         try:
-            with open(filename, "w") as f:
+            with open(self.savepath, "w") as f:
                 json.dump(data_to_save, f, indent=4)
         except Exception as e:
             print(f"Failed to save points to {filename}: {e}")
@@ -360,40 +353,19 @@ class NiiImageEditor:
         if nearest_point:
             self.delete_specific_point(nearest_point, nearest_polyline, is_positive)
 
+def main(imgpath, savepath):
+    root = tk.Tk()
+    initial_points = None
+    path = imgpath
+    app = NiiImageEditor(root, path, slice_axis=2, initial_points=initial_points, savepath=savepath)
+    root.mainloop()
+    # if os.path.exists(f"{savepath}/points.json")
+    # json.load(open(f"{savepath}/points.json"))
 
 if __name__ == "__main__":
-    root = tk.Tk()
-    
-    # # Example of loading initial points from a JSON file
-    # try:
-    #     with open("initial_points.json", "r") as f:
-    #         initial_points = json.load(f)
-    # except FileNotFoundError:
-    #     initial_points = None
-#     initial_points = {
-#     "positive": [
-#         [
-#             [50, 100, 30],
-#             [55, 195, 30],
-#             [60, 110, 30]
-#         ],
-#         [
-#             [80, 150, 50],
-#             [85, 155, 50],
-#             [90, 160, 50]
-#         ]
-#     ],
-#     "negative": [
-#         [
-#             [120, 200, 40],
-#             [125, 205, 40],
-#             [130, 210, 40]
-#         ]
-#     ]
-# }
-    initial_points = None
-    # path = r"/Users/aarushsahni/Documents/Research/vol_6"
-    path = r"/Users/amyfang/Desktop/SAM3D/vol_6"
-    app = NiiImageEditor(root, path, slice_axis=2, initial_points=initial_points)
-    root.mainloop()
-    print(json.load(open("final_points.json")))
+    import argparse
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-p','--path',)
+    args = parser.parse_args()
+    main(args.path)

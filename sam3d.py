@@ -65,16 +65,18 @@ def main():
     if int(args.reslice):
         shutil.rmtree(tempdir)
         os.makedirs(tempdir)
-        slices_list, transformed_arrays = scale_transform.get_prompt_slices(image, tempdir, transform_list)
-    else:
-        slices_list, transformed_arrays = scale_transform.get_prompt_slices(image, tempdir, transform_list, reslice=False)
+        # slices_list, transformed_arrays = scale_transform.get_prompt_slices(image, tempdir, transform_list)
+    # else:
+    #     slices_list, transformed_arrays = scale_transform.get_prompt_slices(image, tempdir, transform_list, reslice=False)
     
     # call prompting script
     if int(args.reprompt):
-        reprompting3d.main(tempdir)
+        reprompting3d.main(args.path, tempdir) # fix this
+
+    slices_list, transformed_arrays = scale_transform.get_prompt_slices(image, tempdir, transform_list)
     
     # parse prompts
-    pos_seg, neg_seg = scale_transform.parse_prompts(tempdir, slices_list)
+    pos_seg, neg_seg = scale_transform.parse_prompts(tempdir, slices_list, image.shape)
     
     # initialize SAM model
     sam_checkpoint = args.checkpoint
