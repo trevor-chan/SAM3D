@@ -13,6 +13,7 @@ import open3d as o3d
 import os
 import torch
 import shutil
+from threading import Thread
 
 import geometry
 import scale_transform
@@ -21,6 +22,7 @@ import segmentfunction
 import prompting
 import recomposition
 import reprompting3d
+import post_processing_windows
 
 
 
@@ -59,6 +61,7 @@ def main():
     # open image and get slices
     image = utils.padtocube(utils.load3dmatrix(args.path, args.datatype))
     print('image loaded')
+    print(image.shape)
 
     # make a temporary directory to save the slices
     tempdir = "tempdir"
@@ -129,8 +132,17 @@ def main():
     print('point cloud refinement')
     running = True
     valid_inputs = ['evaluate', 'downsample', 'outliers', 'done']
-    downsample, outliers, n_neighbors, radius, iterations = 1, 1, 25, 0.02, 1  # Set default values
+    downsample, outliers, n_neighbors, radius, iterations = 1, 1, 25, 0.02, 0  # Set default values
     pcd = recomposition.create_point_cloud(allpoints, visualize=True, downsample=downsample, outliers=outliers, n_neighbors=n_neighbors, radius=radius)
+    
+    # open3d_thread = Thread(target=post_processing_windows.create_open3d_window, args=(pcd,))
+    # open3d_thread.start()
+
+    # Start Tkinter in the main thread
+    # post_processing_windows.setup_tkinter()
+    
+    
+    
     while running:
         user_input = input("Enter a command (evaluate, downsample, outliers, done): ").lower()  # Convert input to lowercase
         # Check if the input is valid
@@ -169,7 +181,7 @@ def main():
         else:
             print("Invalid input. Please enter one of (voxsize, resolution, dilation, erosion, fillholes), (evaluate), or (done) if finished.")
 
-    
+    print('hi hi hi')
     
     # refinement loop
     print('voxel mask refinement')
@@ -177,7 +189,7 @@ def main():
     running = True
     voxsize, resolution, dilation, erosion, fillholes = 2/image.shape[0], image.shape[0], 5, 5, True  # Set default values
     mask = recomposition.voxel_density_mask(pcd, vox_size = voxsize, resolution = resolution, dilation = dilation, erosion = erosion, fill_holes = fillholes)
-    recomposition.draw_orthoplanes(image, mask)
+    # recomposition.draw_orthoplanes(image, mask)
     
     while running:
         user_input = input("Enter a command (evaluate, voxsize, resolution, dilation, erosion, fillholes, done): ").lower()  # Convert input to lowercase
@@ -218,7 +230,7 @@ def main():
                 running = False
             elif user_input == 'evaluate':
                 mask = recomposition.voxel_density_mask(pcd, vox_size = voxsize, resolution = resolution, dilation = dilation, erosion = erosion, fill_holes = fillholes)
-                recomposition.draw_orthoplanes(image, mask)
+                # recomposition.draw_orthoplanes(image, mask)
                 print("Mask created.")
         else:
             print("Invalid input. Please enter one of (voxsize, resolution, dilation, erosion, fillholes), (evaluate), or (done) if finished.")

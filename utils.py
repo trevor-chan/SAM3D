@@ -15,7 +15,7 @@ def load3dmatrix(folder, datatype):
         images = [Image.open(f) for f in filepaths]
     if datatype == "dcm":
         images = [dicom.dcmread(f).pixel_array for f in filepaths]
-    image = np.stack(images)
+    image = np.stack(images, axis=-1)
     image = (image - np.amin(image)) / (np.amax(image) - np.amin(image)) * 255
     return image
 

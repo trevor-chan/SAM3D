@@ -2,6 +2,7 @@ import numpy as np
 import cv2
 import json
 import tqdm
+import geometry
 
 def scale_forward (point, shape):
     return point / np.array(shape) * 2 - 1
@@ -66,33 +67,36 @@ def get_prompt_slices(image, dirpath, transform_list, reslice=True):
 # Get line segments - we no longer need to perform a rotation transformation back to the global coordinate system (index to coord), but we do 
 # Still need to perform a scaling (index to coord but with a zero rotation transform), then we also don't want to assume that every slice
 # has received prompting (len(slices_list) may be less than the length of pos_polylines_slices or neg_polylines_slices
-def get_line_segments(slices_list, pos_polylines_slices, neg_polylines_slices):
+def get_line_segments(img_shape, pos_polylines_slices, neg_polylines_slices):
     pos_seg = []
     neg_seg = []
 
-    for i, s in enumerate(slices_list):
-        idx = s['idx']
-        shape = s['shape']
-        transform_curr = s['transform']
+    # for i, s in enumerate(slices_list):
+    # idx = s['idx']
+    # shape = s['shape']
+    # transform_curr = s['transform']
+    transform_curr = geometry.Transform() # initialize identity transform
 
-        for line in pos_polylines_slices[i]:
-            global_line = []
-            for point in line:
-                print(f'point {point}')
-                point = point[:2] + [idx]
-                transformed_point = index_to_coord(point, transform_curr, shape)
-                global_line.append(transformed_point)
-            for j in range(len(global_line) - 1):
-                pos_seg.append([global_line[j], global_line[j + 1]])
+    for line in pos_polylines_slices[0]:
+        global_line = []
+        for point in line:
+            # point = point[:2] + [idx]
+            print(f'point: {point}')
+            print(f'shape {img_shape}')
+            transformed_point = index_to_coord(point, transform_curr, img_shape)
+            print(f'transformed_point: {transformed_point}')
+            global_line.append(transformed_point)
+        for j in range(len(global_line) - 1):
+            pos_seg.append([global_line[j], global_line[j + 1]])
 
-        for line in neg_polylines_slices[i]:
-            global_line = []
-            for point in line:
-                point = point[:2] + [idx]
-                transformed_point = index_to_coord(point, transform_curr, shape)
-                global_line.append(transformed_point)
-            for j in range(len(global_line) - 1):
-                neg_seg.append([global_line[j], global_line[j + 1]])
+    for line in neg_polylines_slices[0]:
+        global_line = []
+        for point in line:
+            # point = point[:2] + [idx]
+            transformed_point = index_to_coord(point, transform_curr, img_shape)
+            global_line.append(transformed_point)
+        for j in range(len(global_line) - 1):
+            neg_seg.append([global_line[j], global_line[j + 1]])
     return pos_seg, neg_seg
 
 def get_intersections(matrix_shape, pos_seg, neg_seg, t, z):
@@ -126,12 +130,20 @@ def parse_prompts(folder, slices_list, img_shape):
         prompt_points = json.load(file)
     assert len(img_shape) == 3
     assert img_shape[0] == img_shape[1] == img_shape[2], "right now only takes cubes as input"
-    padding_constant = (np.sqrt(3) - 1) / 2 * img_shape[0]
-    for k in prompt_points.keys():
-        for line in prompt_points[k]:
-            for point in line:
-                for d in point:
-                    d = float(d) + padding_constant
+    padding_constant = int((np.sqrt(3) - 1) / 2 * img_shape[0])
+    print(f'padding_constant: {padding_constant}')
+
+    # will fix this at some point in the future
+
+    for i in range(len(prompt_points['positive'])):
+        for j in range(len(prompt_points['positive'][i])):
+            for k in range(len(prompt_points['positive'][i][j])):
+                prompt_points['positive'][i][j][k] += padding_constant
+
+    for i in range(len(prompt_points['negative'])):
+        for j in range(len(prompt_points['negative'][i])):
+            for k in range(len(prompt_points['negative'][i][j])):
+                prompt_points['negative'][i][j][k] += padding_constant
 
     # pos_polylines_slices = []
     # neg_polylines_slices = []
@@ -142,8 +154,8 @@ def parse_prompts(folder, slices_list, img_shape):
     pos_polylines_slices = [prompt_points['positive']]
     neg_polylines_slices = [prompt_points['negative']]
 
-
+    padded_img_shape = np.array(img_shape) + (padding_constant * 2)
 
     # get pos, neg line segments
-    pos_seg, neg_seg = get_line_segments(slices_list, pos_polylines_slices, neg_polylines_slices)
+    pos_seg, neg_seg = get_line_segments(padded_img_shape, pos_polylines_slices, neg_polylines_slices)
     return pos_seg, neg_seg

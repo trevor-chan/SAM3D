@@ -16,9 +16,10 @@ def generate_spherical_point_cloud(radius=1, points=1000):
     pcd = mesh.sample_points_uniformly(number_of_points=points)
     return pcd
 
-def process_point_cloud_commands(vis):
+def process_point_cloud_commands(vis, pcd=None):
     """Handle incoming commands to manipulate the point cloud."""
-    pcd = generate_spherical_point_cloud()  # Generate initial point cloud
+    if pcd is None:
+        pcd = generate_spherical_point_cloud()  # Generate initial point cloud
     vis.add_geometry(pcd)
     while True:
         time.sleep(0.05)
@@ -51,10 +52,10 @@ def process_point_cloud_commands(vis):
         vis.poll_events()
         vis.update_renderer()
 
-def create_open3d_window():
+def create_open3d_window(pcd=None):
     vis = o3d.visualization.Visualizer()
     vis.create_window()
-    process_point_cloud_commands(vis)
+    process_point_cloud_commands(vis, pcd)
 
 def update_slider_from_entry(slider, entry, min_val, max_val):
     """ Update slider value from entry, ensuring it is within valid range. """

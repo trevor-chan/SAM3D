@@ -5,6 +5,7 @@ import numpy as np
 import json
 import glob
 import os
+import utils
 
 class NiiImageEditor:
     def __init__(self, master, file_path, slice_axis=2, is_folder=True, initial_points=None, savepath='tempdir'):
@@ -13,10 +14,12 @@ class NiiImageEditor:
             is_folder = False
         print(is_folder)
         if is_folder:
-            self.nii_data = self.load_pngs_as_array(file_path)
+            # self.nii_data = utils.padtocube(self.load_pngs_as_array(file_path)) # self.load_pngs_as_array(file_path)
+            self.nii_data = utils.padtocube(utils.load3dmatrix(file_path, 'png'))
         else:
             nii_file = nib.load(file_path)
             self.nii_data = nii_file.get_fdata()
+            self.nii_data = utils.padtocube(self.nii_data)
         print(self.nii_data.shape)
         self.current_slice_index = 0
         self.pos_polylines = [[]]
@@ -155,6 +158,12 @@ class NiiImageEditor:
 
     def draw_polyline(self, polyline, color):
         points_on_slice = [point for point in polyline if point[self.slice_axis] == self.current_slice_index]
+        points_on_slice_in_polyline = [point for point in polyline]
+        draw_segments = points_on_slice == points_on_slice_in_polyline
+
+        # This takes points in a polyline, omits points that are not on the same slice as current (self.slice_axis - looks for current index)
+        # Then, it draws a polyline segment between consecutive points in the new list
+        # However, we want to know if the points were consecutive in the old list, and only draw if so
 
         for i, point in enumerate(points_on_slice):
             if self.slice_axis == 0:
@@ -166,7 +175,7 @@ class NiiImageEditor:
             
             self.draw_point(draw_x, draw_y, color, point)
 
-            if i > 0:
+            if i > 0 and draw_segments:
                 prev_point = points_on_slice[i-1]
                 if self.slice_axis == 0:
                     prev_x, prev_y = prev_point[1] * self.scale, prev_point[2] * self.scale
