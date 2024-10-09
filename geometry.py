@@ -40,7 +40,7 @@ class Transform:
     def simple_padding(self, array, constant=0):
         assert array.shape[0] == array.shape[1] == array.shape[2], 'array should be squished to square'
         hypotenuse = 3 ** 0.5 * array.shape[0]
-        padwidth = int((hypotenuse - array.shape[0]) / 2)
+        padwidth = int((hypotenuse - array.shape[0]) / 2 / 2)
         array = np.pad(
             array,
             ((padwidth,padwidth),(padwidth,padwidth),(padwidth,padwidth))

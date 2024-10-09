@@ -80,11 +80,7 @@ def get_line_segments(img_shape, pos_polylines_slices, neg_polylines_slices):
     for line in pos_polylines_slices[0]:
         global_line = []
         for point in line:
-            # point = point[:2] + [idx]
-            print(f'point: {point}')
-            print(f'shape {img_shape}')
             transformed_point = index_to_coord(point, transform_curr, img_shape)
-            print(f'transformed_point: {transformed_point}')
             global_line.append(transformed_point)
         for j in range(len(global_line) - 1):
             pos_seg.append([global_line[j], global_line[j + 1]])
@@ -130,7 +126,8 @@ def parse_prompts(folder, slices_list, img_shape):
         prompt_points = json.load(file)
     assert len(img_shape) == 3
     assert img_shape[0] == img_shape[1] == img_shape[2], "right now only takes cubes as input"
-    padding_constant = int((np.sqrt(3) - 1) / 2 * img_shape[0])
+    # padding_constant = int((np.sqrt(3) - 1) / 2 * img_shape[0]) 
+    padding_constant = int((np.sqrt(3) - 1) / 2 * img_shape[0] / 2) 
     print(f'padding_constant: {padding_constant}')
 
     # will fix this at some point in the future

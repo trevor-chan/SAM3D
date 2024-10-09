@@ -8,3 +8,6 @@ __pycache__/
 *.json
 *.pth
 *.pt
+*.nii.gz
+*.gz
+segment-anything-2/

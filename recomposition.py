@@ -3,9 +3,9 @@ import open3d as o3d
 from scipy.ndimage import binary_erosion, binary_dilation, binary_fill_holes
 import matplotlib.pyplot as plt
 
-def create_point_cloud(points, visualize=False, downsample=0, outliers=0, n_neighbors=20, radius=0.02, iterations=1):
+def create_point_cloud(points, visualize=False, downsample=0, outliers=0, n_neighbors=20, radius=0.02, iterations=1, thicken=True):
     pcd = o3d.geometry.PointCloud()
-    points = np.array([p for point in points for p in point])
+    # points = np.array([p for point in points for p in point])
     pcd.points = o3d.utility.Vector3dVector(points)
     if downsample > 0:
         pcd = pcd.uniform_down_sample(every_k_points=downsample)
@@ -16,26 +16,51 @@ def create_point_cloud(points, visualize=False, downsample=0, outliers=0, n_neig
             pcd = pcd.select_by_index(ind)
     if visualize:
         o3d.visualization.draw_geometries([pcd], window_name="Point Cloud")
+
     return pcd
     
 
-def voxel_density_mask(pcd, vox_size = 2/256, resolution=256, dilation=5, erosion=5, fill_holes=True):
-    voxgrid = o3d.geometry.VoxelGrid.create_from_point_cloud_within_bounds(pcd, voxel_size = vox_size, min_bound = (-1,-1,-1), max_bound = (1,1,1))
+def voxel_density_mask(source_pcd, vox_size = 2/256, resolution=256, dilation=5, erosion=5, fill_holes=True, distance=0.01, shape=None):
+    # voxgrid = o3d.geometry.VoxelGrid.create_from_point_cloud_within_bounds(source_pcd, voxel_size = vox_size, min_bound = (-1,-1,-1), max_bound = (1,1,1))
 
     # get binary array
-    x = np.linspace(-1, 1, resolution)/3**0.5
-    y = np.linspace(-1, 1, resolution)/3**0.5
-    z = np.linspace(-1, 1, resolution)/3**0.5
+    x = np.linspace(-1, 1, resolution)/((3**0.5-1)/2+1)
+    y = np.linspace(-1, 1, resolution)/((3**0.5-1)/2+1)
+    z = np.linspace(-1, 1, resolution)/((3**0.5-1)/2+1)
     X, Y, Z = np.meshgrid(x, y, z, indexing='ij')
     queries = np.vstack([X.ravel(), Y.ravel(), Z.ravel()]).T
-    output = voxgrid.check_if_included(o3d.utility.Vector3dVector(queries))
-    output = np.array(output).reshape(resolution,resolution,resolution)
     
-    # mask processing:
-    dilated = binary_dilation(output, iterations = dilation)
-    eroded = binary_erosion(dilated, iterations = erosion)
-    mask = binary_fill_holes(eroded)
+    query_pcd = o3d.geometry.PointCloud()
+    query_pcd.points = o3d.utility.Vector3dVector(queries)
+
+    source2query = query_pcd.compute_point_cloud_distance(source_pcd)
+    source2query = np.array(source2query)
+    
+    # source2query = voxgrid.check_if_included(o3d.utility.Vector3dVector(queries))
+    source2query = np.array(source2query).reshape(resolution,resolution,resolution)
+    mask = np.where(source2query < distance, 1, 0)
+    # mask = binary_erosion(mask, iterations = erosion)
     return mask
+
+# def voxel_density_mask(source_pcd, vox_size = 2/256, resolution=256, dilation=5, erosion=5, fill_holes=True):
+#     # voxgrid = o3d.geometry.VoxelGrid.create_from_point_cloud_within_bounds(source_pcd, voxel_size = vox_size, min_bound = (-1,-1,-1), max_bound = (1,1,1))
+
+#     # get binary array
+#     x = np.linspace(-1, 1, resolution)/3**0.5
+#     y = np.linspace(-1, 1, resolution)/3**0.5
+#     z = np.linspace(-1, 1, resolution)/3**0.5
+#     X, Y, Z = np.meshgrid(x, y, z, indexing='ij')
+#     queries = np.vstack([X.ravel(), Y.ravel(), Z.ravel()]).T
+
+    
+#     source2query = voxgrid.check_if_included(o3d.utility.Vector3dVector(queries))
+#     source2query = np.array(source2query).reshape(resolution,resolution,resolution)
+    
+#     # mask processing:
+#     dilated = binary_dilation(source2query, iterations = dilation)
+#     # eroded = binary_erosion(dilated, iterations = erosion)
+#     # mask = binary_fill_holes(eroded)
+#     return mask
 
 def draw_orthoplanes(image, mask):
     fig, ax = plt.subplots(2,3, figsize=(15,10))
