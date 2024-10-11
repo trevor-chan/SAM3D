@@ -10,6 +10,8 @@ Major dependencies for the code include pytorch, segment-anything, and open3d-py
 
 An Nvidia GPU is recommended for fast inference. If you are running on a computer without a GPU, you can run the model on a CPU but we recommend using fewer slices to save on inference time. You may also need to adjust the default values for mask post-processing.
 
+You will additionally need to download model checkpoints from https://github.com/facebookresearch/segment-anything. You can place these in a SAM3D/checkpoints directory.
+
 ## To run code
 
 The main script is sam3d.py. This script accepts a number of arguments, which can be seen by running $python sam3d.py --help
