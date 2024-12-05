@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sam3d-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sam3d
+  template:
+    metadata:
+      labels:
+        app: sam3d
+    spec:
+      containers:
+      - name: sam3d
+        image: lilianli/sam3d:latest
+        ports:
+        - containerPort: 5900
+        resources:
+          limits:
+            nvidia.com/gpu: 1
+        env:
+        - name: DISPLAY
+          value: ":0.0"
+        volumeMounts:
+        - mountPath: /images
+          name: images-volume
+      volumes:
+      - name: images-volume
+        hostPath:
+          path: /home/ubuntu/images/images/vol_2
+      tolerations:
+      - key: nvidia.com/gpu
+        operator: Exists
+        effect: NoSchedule
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: sam3d-service
+spec:
+  selector:
+    app: sam3d
+  ports:
+  - protocol: TCP
+    port: 5900
+    targetPort: 5900
+  type: LoadBalancer

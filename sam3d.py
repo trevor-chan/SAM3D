@@ -29,8 +29,8 @@ import reprompting3d
 import post_processing_windows
 import matplotlib
 
-print(matplotlib.get_backend())
-matplotlib.use('qtagg')
+# print(matplotlib.get_backend())
+# matplotlib.use('qtagg')
 
 def main():
     parser = argparse.ArgumentParser()
@@ -38,7 +38,7 @@ def main():
     parser.add_argument("-r", "--rotations", help="type of rotations to apply: ['ortho','cubic','ico','dodeca']", default="ico")
     parser.add_argument("-s", "--slices", help="number of slices for segmentation inference along each axis", default=120)
     parser.add_argument("-o", "--outdir", help="location to save the final mask", default="outputs")
-    parser.add_argument("-ch", "--checkpoint", help="location of the SAM model checkpoint", default="checkpoints/sam_vit_h_4b8939.pth")
+    parser.add_argument("-ch", "--checkpoint", help="location of the SAM model checkpoint", default="sam_vit_h_4b8939.pth")
     parser.add_argument("--reslice", help="if false, skip the initial reslicing step", default=1)
     parser.add_argument("--reprompt", help="if false, skip the initial prompting step", default=1)
     parser.add_argument("--datatype", help="if false, skip the initial prompting step", default="png")
@@ -71,7 +71,8 @@ def main():
     # make a temporary directory to save the slices
     tempdir = "tempdir"
     if int(args.reslice):
-        shutil.rmtree(tempdir)
+        if os.path.exists(tempdir):  # Check if the directory exists
+            shutil.rmtree(tempdir)
         os.makedirs(tempdir)
         # slices_list, transformed_arrays = scale_transform.get_prompt_slices(image, tempdir, transform_list)
     # else:
@@ -147,122 +148,122 @@ def main():
 
     # pointcloud refinement loop
     print('point cloud refinement')
-    running = True
-    valid_inputs = ['evaluate', 'downsample', 'outliers', 'done']
-    if args.rotations == "ortho":
-        downsample, outliers, n_neighbors, radius, iterations = 1, 1, 12, 0.02, 4  # Set default values
-    elif args.rotations == "cubic":
-        downsample, outliers, n_neighbors, radius, iterations = 1, 1, 16, 0.02, 4  # Set default values
-    elif args.rotations == "ico":
-        downsample, outliers, n_neighbors, radius, iterations = 1, 1, 24, 0.02, 4  # Set default values
-    elif args.rotations == "dodeca":
-        downsample, outliers, n_neighbors, radius, iterations = 1, 1, 40, 0.02, 4  # Set default values
-    voxsize, resolution, dilation, erosion, fillholes, distance = 1/image.shape[0], image.shape[0], 0, 0, True, 0.01  # Set default values
-    
-    pcd = recomposition.create_point_cloud(points, visualize=True, downsample=downsample, outliers=outliers, n_neighbors=n_neighbors, radius=radius)
-    # mask = recomposition.voxel_density_mask(pcd, vox_size=voxsize, resolution=resolution, dilation=dilation, erosion=erosion, fill_holes=fillholes, distance=distance, shape=transformed_img.shape)
-    # recomposition.draw_orthoplanes(image, mask)
-
-    while running:
-        user_input = input("Enter a command (evaluate, downsample, outliers, done): ").lower()  # Convert input to lowercase
-        # Check if the input is valid
-        if user_input in valid_inputs:
-            # Perform actions based on user input
-            if user_input == 'downsample':
-                downsample_input = input(f"Current downsample = {downsample}, enter a new value: ").lower()
-                if downsample_input == '':
-                    downsample_input = downsample
-                assert int(downsample_input) > 0, "choose an integer factor greater than 0."
-                downsample = int(downsample_input)
-            elif user_input == 'outliers':
-                n_neighbors_input = input(f"Current n_neighbors = {n_neighbors}, enter a new n_neighbors: ").lower()
-                if n_neighbors_input == '':
-                    n_neighbors_input = n_neighbors
-                radius_input = input(f"Current radius = {radius}, enter a new radius: ").lower()
-                if radius_input == '':
-                    radius_input = radius
-                iterations_input = input(f"Current iterations = {iterations}, enter a new iterations: ").lower()
-                if iterations_input == '':
-                    iterations_input = iterations
-                assert int(n_neighbors_input) >= 0, "n_neighbors must be an integer greater than or equal to 0."
-                assert float(radius_input) >= 0, "radius must be a float greater than or equal to 0."
-                assert int(iterations) > 0, "iterations must be an integer greater than 0."
-                n_neighbors = int(n_neighbors_input)
-                radius = float(radius_input)
-                iterations = int(iterations_input)
-                if n_neighbors == 0 or radius == 0:
-                    outliers = 0
-                else:
-                    outliers = 1
-            elif user_input == 'done':
-                running = False
-            elif user_input == 'evaluate':
-                pcd = recomposition.create_point_cloud(points, visualize=True, downsample=downsample, outliers=outliers, n_neighbors=n_neighbors, radius=radius, iterations=iterations)
-                # mask = recomposition.voxel_density_mask(pcd, vox_size = voxsize, resolution = resolution, dilation = dilation, erosion = erosion, fill_holes = fillholes)
-                # recomposition.draw_orthoplanes(image, mask)
-        else:
-            print("Invalid input. Please enter one of (voxsize, resolution, dilation, erosion, fillholes), (evaluate), or (done) if finished.")
-    
-    mask = recomposition.voxel_density_mask(pcd, vox_size = voxsize, resolution = resolution, dilation = dilation, erosion = erosion, fill_holes = fillholes, distance=distance)
-    recomposition.draw_orthoplanes(image, mask)
-    # # refinement loop
-    # print('voxel mask refinement')
-    # valid_inputs = ['evaluate', 'voxsize', 'resolution', 'dilation', 'erosion', 'fillholes', 'done']
     # running = True
-    # voxsize, resolution, dilation, erosion, fillholes = 1/image.shape[0], image.shape[0], 2, 2, True  # Set default values
-    # mask = recomposition.voxel_density_mask(pcd, vox_size = voxsize, resolution = resolution, dilation = dilation, erosion = erosion, fill_holes = fillholes)
-    # recomposition.draw_orthoplanes(image, mask)
+    # valid_inputs = ['evaluate', 'downsample', 'outliers', 'done']
+    # if args.rotations == "ortho":
+    #     downsample, outliers, n_neighbors, radius, iterations = 1, 1, 12, 0.02, 4  # Set default values
+    # elif args.rotations == "cubic":
+    #     downsample, outliers, n_neighbors, radius, iterations = 1, 1, 16, 0.02, 4  # Set default values
+    # elif args.rotations == "ico":
+    #     downsample, outliers, n_neighbors, radius, iterations = 1, 1, 24, 0.02, 4  # Set default values
+    # elif args.rotations == "dodeca":
+    #     downsample, outliers, n_neighbors, radius, iterations = 1, 1, 40, 0.02, 4  # Set default values
+    # voxsize, resolution, dilation, erosion, fillholes, distance = 1/image.shape[0], image.shape[0], 0, 0, True, 0.01  # Set default values
     
+    # pcd = recomposition.create_point_cloud(points, visualize=True, downsample=downsample, outliers=outliers, n_neighbors=n_neighbors, radius=radius)
+    # # mask = recomposition.voxel_density_mask(pcd, vox_size=voxsize, resolution=resolution, dilation=dilation, erosion=erosion, fill_holes=fillholes, distance=distance, shape=transformed_img.shape)
+    # # recomposition.draw_orthoplanes(image, mask)
+
     # while running:
-    #     user_input = input("Enter a command (evaluate, voxsize, resolution, dilation, erosion, fillholes, done): ").lower()  # Convert input to lowercase
+    #     user_input = input("Enter a command (evaluate, downsample, outliers, done): ").lower()  # Convert input to lowercase
+    #     # Check if the input is valid
     #     if user_input in valid_inputs:
     #         # Perform actions based on user input
-    #         if user_input == 'voxsize':
-    #             vox_size_input = input(f"Current voxel size = {voxsize}, enter a new voxel size: ").lower()
-    #             if vox_size_input == '':
-    #                 vox_size_input = voxsize
-    #             assert float(vox_size_input) > 0 and float(vox_size_input) < 1, "Voxel size must be greater than 0 and less than 1."
-    #             voxsize = float(vox_size_input)
-    #         elif user_input == 'resolution':
-    #             resolution_input = input(f"Current resolution = {resolution}, enter a new resolution: ").lower()
-    #             if resolution_input == '':
-    #                 resolution_input = resolution
-    #             assert int(resolution_input) > 0, "Resolution must be an integer greater than 0."
-    #             resolution = int(resolution_input)
-    #         elif user_input == 'dilation':
-    #             dilation_input = input(f"Current dilation = {dilation}, enter a new dilation: ").lower()
-    #             if dilation_input == '':
-    #                 dilation_input = dilation
-    #             assert int(dilation_input) >= 0, "dilation must be an integer greater than or equal to 0."
-    #             dilation = int(dilation_input)
-    #         elif user_input == 'erosion':
-    #             erosion_input = input(f"Current erosion = {erosion}, enter a new erosion: ").lower()
-    #             if erosion_input == '':
-    #                 erosion_input = erosion
-    #             assert int(erosion_input) >= 0, "erosion must be an integer greater than or equal to 0."
-    #             erosion = int(erosion_input)
-    #         elif user_input == 'fillholes':
-    #             if fillholes:
-    #                 print(f"Fill holes was set to True. Fill holes is now False.")
-    #                 fillholes = False
+    #         if user_input == 'downsample':
+    #             downsample_input = input(f"Current downsample = {downsample}, enter a new value: ").lower()
+    #             if downsample_input == '':
+    #                 downsample_input = downsample
+    #             assert int(downsample_input) > 0, "choose an integer factor greater than 0."
+    #             downsample = int(downsample_input)
+    #         elif user_input == 'outliers':
+    #             n_neighbors_input = input(f"Current n_neighbors = {n_neighbors}, enter a new n_neighbors: ").lower()
+    #             if n_neighbors_input == '':
+    #                 n_neighbors_input = n_neighbors
+    #             radius_input = input(f"Current radius = {radius}, enter a new radius: ").lower()
+    #             if radius_input == '':
+    #                 radius_input = radius
+    #             iterations_input = input(f"Current iterations = {iterations}, enter a new iterations: ").lower()
+    #             if iterations_input == '':
+    #                 iterations_input = iterations
+    #             assert int(n_neighbors_input) >= 0, "n_neighbors must be an integer greater than or equal to 0."
+    #             assert float(radius_input) >= 0, "radius must be a float greater than or equal to 0."
+    #             assert int(iterations) > 0, "iterations must be an integer greater than 0."
+    #             n_neighbors = int(n_neighbors_input)
+    #             radius = float(radius_input)
+    #             iterations = int(iterations_input)
+    #             if n_neighbors == 0 or radius == 0:
+    #                 outliers = 0
     #             else:
-    #                 print(f"Fill holes was set to False. Fill holes is now True.")
-    #                 fillholes = True
+    #                 outliers = 1
     #         elif user_input == 'done':
     #             running = False
     #         elif user_input == 'evaluate':
-    #             mask = recomposition.voxel_density_mask(pcd, vox_size = voxsize, resolution = resolution, dilation = dilation, erosion = erosion, fill_holes = fillholes)
-    #             recomposition.draw_orthoplanes(image, mask)
-    #             print("Mask created.")
+    #             pcd = recomposition.create_point_cloud(points, visualize=True, downsample=downsample, outliers=outliers, n_neighbors=n_neighbors, radius=radius, iterations=iterations)
+    #             # mask = recomposition.voxel_density_mask(pcd, vox_size = voxsize, resolution = resolution, dilation = dilation, erosion = erosion, fill_holes = fillholes)
+    #             # recomposition.draw_orthoplanes(image, mask)
     #     else:
     #         print("Invalid input. Please enter one of (voxsize, resolution, dilation, erosion, fillholes), (evaluate), or (done) if finished.")
+    
+    # mask = recomposition.voxel_density_mask(pcd, vox_size = voxsize, resolution = resolution, dilation = dilation, erosion = erosion, fill_holes = fillholes, distance=distance)
+    # recomposition.draw_orthoplanes(image, mask)
+    # # # refinement loop
+    # # print('voxel mask refinement')
+    # # valid_inputs = ['evaluate', 'voxsize', 'resolution', 'dilation', 'erosion', 'fillholes', 'done']
+    # # running = True
+    # # voxsize, resolution, dilation, erosion, fillholes = 1/image.shape[0], image.shape[0], 2, 2, True  # Set default values
+    # # mask = recomposition.voxel_density_mask(pcd, vox_size = voxsize, resolution = resolution, dilation = dilation, erosion = erosion, fill_holes = fillholes)
+    # # recomposition.draw_orthoplanes(image, mask)
+    
+    # # while running:
+    # #     user_input = input("Enter a command (evaluate, voxsize, resolution, dilation, erosion, fillholes, done): ").lower()  # Convert input to lowercase
+    # #     if user_input in valid_inputs:
+    # #         # Perform actions based on user input
+    # #         if user_input == 'voxsize':
+    # #             vox_size_input = input(f"Current voxel size = {voxsize}, enter a new voxel size: ").lower()
+    # #             if vox_size_input == '':
+    # #                 vox_size_input = voxsize
+    # #             assert float(vox_size_input) > 0 and float(vox_size_input) < 1, "Voxel size must be greater than 0 and less than 1."
+    # #             voxsize = float(vox_size_input)
+    # #         elif user_input == 'resolution':
+    # #             resolution_input = input(f"Current resolution = {resolution}, enter a new resolution: ").lower()
+    # #             if resolution_input == '':
+    # #                 resolution_input = resolution
+    # #             assert int(resolution_input) > 0, "Resolution must be an integer greater than 0."
+    # #             resolution = int(resolution_input)
+    # #         elif user_input == 'dilation':
+    # #             dilation_input = input(f"Current dilation = {dilation}, enter a new dilation: ").lower()
+    # #             if dilation_input == '':
+    # #                 dilation_input = dilation
+    # #             assert int(dilation_input) >= 0, "dilation must be an integer greater than or equal to 0."
+    # #             dilation = int(dilation_input)
+    # #         elif user_input == 'erosion':
+    # #             erosion_input = input(f"Current erosion = {erosion}, enter a new erosion: ").lower()
+    # #             if erosion_input == '':
+    # #                 erosion_input = erosion
+    # #             assert int(erosion_input) >= 0, "erosion must be an integer greater than or equal to 0."
+    # #             erosion = int(erosion_input)
+    # #         elif user_input == 'fillholes':
+    # #             if fillholes:
+    # #                 print(f"Fill holes was set to True. Fill holes is now False.")
+    # #                 fillholes = False
+    # #             else:
+    # #                 print(f"Fill holes was set to False. Fill holes is now True.")
+    # #                 fillholes = True
+    # #         elif user_input == 'done':
+    # #             running = False
+    # #         elif user_input == 'evaluate':
+    # #             mask = recomposition.voxel_density_mask(pcd, vox_size = voxsize, resolution = resolution, dilation = dilation, erosion = erosion, fill_holes = fillholes)
+    # #             recomposition.draw_orthoplanes(image, mask)
+    # #             print("Mask created.")
+    # #     else:
+    # #         print("Invalid input. Please enter one of (voxsize, resolution, dilation, erosion, fillholes), (evaluate), or (done) if finished.")
             
-    # save mask
-    savename = input("name to save w/out extension: ")
-    if len(args.outdir) == 0:
-        args.outdir = "."
-    utils.save_mrc(image, f'{args.outdir}/{savename}_image.mrc')
-    utils.save_mrc(mask, f'{args.outdir}/{savename}_mask.mrc')
+    # # save mask
+    # savename = input("name to save w/out extension: ")
+    # if len(args.outdir) == 0:
+    #     args.outdir = "."
+    # utils.save_mrc(image, f'{args.outdir}/{savename}_image.mrc')
+    # utils.save_mrc(mask, f'{args.outdir}/{savename}_mask.mrc')
     
     elapsed = int(time.time()-starttime)
     print(f"Total time elapsed: {elapsed//60} minutes, {elapsed%60} seconds.")
