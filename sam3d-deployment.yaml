@@ -29,7 +29,7 @@ spec:
       volumes:
       - name: images-volume
         hostPath:
-          path: /home/ubuntu/images/images/vol_2
+          path: /home/ubuntu/images/vol_2
       tolerations:
       - key: nvidia.com/gpu
         operator: Exists
